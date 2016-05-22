@@ -1,0 +1,1928 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0100)http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/ -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head profile="http://gmpg.org/xfn/11"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+	<link rel="shortcut icon" href="http://blog.tkjelectronics.dk/favicon.ico" type="image/x-icon">
+	<link rel="icon" href="http://blog.tkjelectronics.dk/favicon.ico" type="image/x-icon">
+
+	<title>TKJ Electronics » A practical approach to Kalman filter and how to implement it</title>
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0 - all posts" href="http://blog.tkjelectronics.dk/feed/">
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0 - all comments" href="http://blog.tkjelectronics.dk/comments/feed/">
+	<link rel="pingback" href="http://blog.tkjelectronics.dk/xmlrpc.php">
+
+	<!-- style START -->
+	<!-- default style -->
+	<style type="text/css" media="screen">@import url( http://blog.tkjelectronics.dk/wp-content/themes/inove/style.css );</style>
+	<!-- for translations -->
+		<!--[if IE]>
+		<link rel="stylesheet" href="http://blog.tkjelectronics.dk/wp-content/themes/inove/ie.css" type="text/css" media="screen" />
+	<![endif]-->
+	<!-- style END -->
+
+	<!-- script START -->
+	<style type="text/css"></style><script type="text/javascript" async="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/recaptcha__en.js"></script><script type="text/javascript" async="" src="http://www.google-analytics.com/ga.js"></script><script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/base.js"></script>
+	<script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/menu.js"></script>
+	<!-- script END -->
+
+	<link rel="alternate" type="application/rss+xml" title="TKJ Electronics » A practical approach to Kalman filter and how to implement it Comments Feed" href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/feed/">
+		<script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/72x72\/","ext":".png","source":{"concatemoji":"http:\/\/blog.tkjelectronics.dk\/wp-includes\/js\/wp-emoji-release.min.js?ver=4.4.3"}};
+			!function(a,b,c){function d(a){var c,d,e,f=b.createElement("canvas"),g=f.getContext&&f.getContext("2d"),h=String.fromCharCode;return g&&g.fillText?(g.textBaseline="top",g.font="600 32px Arial","flag"===a?(g.fillText(h(55356,56806,55356,56826),0,0),f.toDataURL().length>3e3):"diversity"===a?(g.fillText(h(55356,57221),0,0),c=g.getImageData(16,16,1,1).data,g.fillText(h(55356,57221,55356,57343),0,0),c=g.getImageData(16,16,1,1).data,e=c[0]+","+c[1]+","+c[2]+","+c[3],d!==e):("simple"===a?g.fillText(h(55357,56835),0,0):g.fillText(h(55356,57135),0,0),0!==g.getImageData(16,16,1,1).data[0])):!1}function e(a){var c=b.createElement("script");c.src=a,c.type="text/javascript",b.getElementsByTagName("head")[0].appendChild(c)}var f,g;c.supports={simple:d("simple"),flag:d("flag"),unicode8:d("unicode8"),diversity:d("diversity")},c.DOMReady=!1,c.readyCallback=function(){c.DOMReady=!0},c.supports.simple&&c.supports.flag&&c.supports.unicode8&&c.supports.diversity||(g=function(){c.readyCallback()},b.addEventListener?(b.addEventListener("DOMContentLoaded",g,!1),a.addEventListener("load",g,!1)):(a.attachEvent("onload",g),b.attachEvent("onreadystatechange",function(){"complete"===b.readyState&&c.readyCallback()})),f=c.source||{},f.concatemoji?e(f.concatemoji):f.wpemoji&&f.twemoji&&(e(f.twemoji),e(f.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script><script src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/wp-emoji-release.min.js" type="text/javascript"></script>
+		<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+<link rel="stylesheet" id="codecolorer-css" href="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/codecolorer.css" type="text/css" media="screen">
+<script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/jquery.js"></script>
+<script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/jquery-migrate.min.js"></script>
+<script type="text/javascript" src="http://blog.tkjelectronics.dk/wp-content/plugins/google-analyticator/external-tracking.min.js?ver=6.4.9"></script>
+<link rel="https://api.w.org/" href="http://blog.tkjelectronics.dk/wp-json/">
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://blog.tkjelectronics.dk/xmlrpc.php?rsd">
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://blog.tkjelectronics.dk/wp-includes/wlwmanifest.xml"> 
+<link rel="prev" title="Raspberry Pi GPIO control" href="http://blog.tkjelectronics.dk/2012/09/raspberry-pi-gpio-control/">
+<link rel="next" title="Cortex-M4 and 9DOF for $10" href="http://blog.tkjelectronics.dk/2012/09/cortex-m4-and-9dof-for-10/">
+<meta name="generator" content="WordPress 4.4.3">
+<link rel="canonical" href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/">
+<link rel="shortlink" href="http://blog.tkjelectronics.dk/?p=2868">
+<link rel="alternate" type="application/json+oembed" href="http://blog.tkjelectronics.dk/wp-json/oembed/1.0/embed?url=http%3A%2F%2Fblog.tkjelectronics.dk%2F2012%2F09%2Fa-practical-approach-to-kalman-filter-and-how-to-implement-it%2F">
+<link rel="alternate" type="text/xml+oembed" href="http://blog.tkjelectronics.dk/wp-json/oembed/1.0/embed?url=http%3A%2F%2Fblog.tkjelectronics.dk%2F2012%2F09%2Fa-practical-approach-to-kalman-filter-and-how-to-implement-it%2F&amp;format=xml">
+<style type="text/css">.addtoany_subscribe img{border:0;}</style>
+
+<!-- Bad Behavior 2.2.18 run time: 146.751 ms -->
+<script type="text/javascript">
+<!--
+function bb2_addLoadEvent(func) {
+	var oldonload = window.onload;
+	if (typeof window.onload != 'function') {
+		window.onload = func;
+	} else {
+		window.onload = function() {
+			oldonload();
+			func();
+		}
+	}
+}
+
+bb2_addLoadEvent(function() {
+	for ( i=0; i < document.forms.length; i++ ) {
+		if (document.forms[i].method == 'post') {
+			var myElement = document.createElement('input');
+			myElement.setAttribute('type', 'hidden');
+			myElement.name = 'bb2_screener_';
+			myElement.value = '1463808316 205.200.195.111';
+			document.forms[i].appendChild(myElement);
+		}
+	}
+});
+// --></script>
+		<meta name="generator" content="NextGEN Gallery v2.1.31">
+<meta name="generator" content="NextGEN Gallery Optimizer Basic v2.1.3">
+<style type="text/css">
+/* <![CDATA[ */
+img.latex { vertical-align: middle; border: none; }
+/* ]]> */
+</style>
+<!-- Google Analytics Tracking by Google Analyticator 6.4.9: http://www.videousermanuals.com/google-analyticator/ -->
+<script type="text/javascript">
+    var analyticsFileTypes = [''];
+    var analyticsSnippet = 'enabled';
+    var analyticsEventTracking = 'enabled';
+</script>
+<script type="text/javascript">
+	var _gaq = _gaq || [];
+  
+	_gaq.push(['_setAccount', 'UA-25655064-4']);
+    _gaq.push(['_addDevId', 'i9k95']); // Google Analyticator App ID with Google
+	_gaq.push(['_trackPageview']);
+
+	(function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	})();
+</script>
+<style type="text/css">.a2a_menu,.a2a_menu * {-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box;float:none;margin:0;padding:0;position: static;height:auto;width:auto;}.a2a_menu {border-radius: 6px;display:none;direction:ltr;background:#FFF;font: 16px sans-serif-light, "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Arial, Helvetica, "Liberation Sans", sans-serif;color:#000;line-height:12px;border: 1px solid #CCC;vertical-align:baseline;outline: 0; overflow:hidden;}.a2a_mini {min-width:200px;position:absolute;width: 300px;z-index:9999997;}.a2a_overlay {display: none;background: #CCC; _height: expression( ((e=document.documentElement.clientHeight)?e:document.body.clientHeight)+"px" ); _width: expression( ((e=document.documentElement.clientWidth)?e:document.body.clientWidth)+"px" ); filter: alpha(opacity=50); opacity: .7;position: fixed;_position: absolute; top: 0;right: 0;left: 0;bottom: 0;z-index: 9999998;-webkit-tap-highlight-color: rgba(0,0,0,0);transition: opacity .14s;}.a2a_full {background: #FFF;height: auto;height: calc(320px);top: 15%;_top: expression(40+((e=document.documentElement.scrollTop)?e:document.body.scrollTop)+"px"); left: 50%;margin-left: -320px; position: fixed;_position: absolute; text-align: center;width: 640px;z-index: 9999999;     transition: transform .14s, opacity .14s;}.a2a_full_header,.a2a_full_services,.a2a_full_footer {border: 0;margin: 0;padding: 12px;box-sizing: border-box;}.a2a_full_header {padding-bottom: 8px;}.a2a_full_services {height: 280px; overflow-y: scroll;padding: 0 12px;-webkit-overflow-scrolling: touch;}.a2a_full_services .a2a_i {display: inline-block;float: none;width: 181px;width: calc(33.334% - 18px);}div.a2a_full_footer {font-size: 12px;text-align: center;padding: 8px 14px;}div.a2a_full_footer a,div.a2a_full_footer a:visited {display: inline;font-size: 12px;line-height:14px;padding: 8px 14px; }div.a2a_full_footer a:hover,div.a2a_full_footer a:focus {background: none;border: 0;color: #0166FF;}div.a2a_full_footer a span.a2a_s_a2a,div.a2a_full_footer a span.a2a_w_a2a {background-size: 14px;border-radius: 3px;display: inline-block;height:14px;line-height:14px;margin: 0 3px 0 0;vertical-align: top;*vertical-align: middle; width:14px;}@media print {.a2a_menu,.a2a_overlay {visibility: hidden;}}@keyframes a2aFadeIn {from { opacity: 0; }  to { opacity: 1; }}.a2a_starting {opacity: 0;}.a2a_starting.a2a_full {transform: scale(.8);}@media (max-width: 639px) {.a2a_full {border-radius: 0;top: 15%;left: 0;margin-left: auto;width: 100%;}}@media (min-width: 318px) and (max-width: 437px) {.a2a_full .a2a_full_services .a2a_i {width: calc(50% - 18px);}}@media (max-width: 317px) {.a2a_full .a2a_full_services .a2a_i {width: calc(100% - 18px);}}@media (max-height: 436px) {.a2a_full {bottom: 40px;height: auto;top: 40px;}}.a2a_menu a {color:#0166FF;text-decoration:none;font: 16px sans-serif-light, "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Arial, Helvetica, "Liberation Sans", sans-serif;line-height:14px;height:auto;width:auto;outline:none;-moz-outline:none;}.a2a_menu a:visited{color:#0166FF}.a2a_menu a:hover,.a2a_menu a:active,.a2a_menu a:focus{color: #2A2A2A;border-color: #EEE;border-style: solid;background-color: #EEE;text-decoration: none;}.a2a_menu span.a2a_s_find {background-size: 24px;height:24px;left: 8px;position:absolute;top: 7px;width:24px;}.a2a_menu span.a2a_s_find svg {background-color: #FFF;}.a2a_menu span.a2a_s_find svg path {fill: #CCC;}#a2a_menu_container{display:inline-block} #a2a_menu_container{_display:inline} .a2a_menu_title_container {padding: 6px 8px;}.a2a_menu_find_container {border: 1px solid #CCC;border-radius: 6px;padding: 2px 24px 2px 0;position: relative;text-align: left;}.a2a_cols_container .a2a_col1{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}.a2a_menu input, .a2a_menu input[type="text"]{display:block;background-image:none;box-shadow:none;line-height:100%;margin:0;overflow:hidden;padding:0;-moz-box-shadow:none;-webkit-box-shadow:none;-webkit-appearance:none} .a2a_menu_title_container input.a2a_menu_title {background-color: #FFF;border: 0;color: #2A2A2A;font: inherit;margin: 0;padding: 0;width: 99%;}.a2a_menu_find_container input.a2a_menu_find {background-color: transparent;_background-color: #FFF;border: 0;color: #2A2A2A;font: inherit;font-size: 16px;height: 28px;line-height: 20px;left: 38px;outline: 0;padding: 2px 0;position: relative;width: 99%;}.a2a_clear{clear:both} .a2a_img {background:url(https://static.addtoany.com/menu/icons.35.png);border:0;line-height:16px}.a2a_img,.a2a_svg {background-repeat:no-repeat;display:block;overflow:hidden;}.a2a_img{height:16px;line-height:16px;width:16px;}.a2a_svg{height:32px;line-height:32px;width:32px;}a.a2a_i,i.a2a_i{display:block;float:left;border:1px solid #FFF;line-height:24px;padding:6px 8px;text-align:left;white-space:nowrap;overflow: hidden;text-overflow: ellipsis;width:132px;}a.a2a_i span,a.a2a_more span {display: inline-block;overflow: hidden;vertical-align: top;*vertical-align: middle; }a.a2a_i .a2a_img,a.a2a_i .a2a_svg {margin: 0 6px 0 0;}a.a2a_i .a2a_svg,a.a2a_more .a2a_svg {background-size: 24px;height:24px;line-height:24px;width:24px;}a.a2a_sss:hover {border-left: 1px solid #CCC;}a.a2a_menu_show_more_less{border-bottom:1px solid #FFF;border-left:0;border-right:0;line-height:24px;margin:6px 0 0;padding:6px}a.a2a_menu_show_more_less span{display:inline-block;height:24px;margin:0 6px 0 0;} .a2a_kit .a2a_svg { background-repeat: repeat; }.a2a_default_style a{float:left;line-height:16px;padding:0 2px}.a2a_default_style a:hover .a2a_img,.a2a_default_style a:hover .a2a_svg,.a2a_floating_style a:hover .a2a_img,.a2a_floating_style a:hover .a2a_svg {opacity: .7;}.a2a_default_style .a2a_count,.a2a_default_style .a2a_svg,.a2a_floating_style .a2a_svg,.a2a_vertical_style .a2a_count,.a2a_menu .a2a_svg {border-radius:4px ;}.a2a_default_style .a2a_img, .a2a_default_style .a2a_dd, .a2a_default_style .a2a_svg,.a2a_default_style .a2a_counter img { float: left;}.a2a_default_style .a2a_img_text{margin-right:4px}.a2a_default_style .a2a_divider{border-left:1px solid #000;display:inline;float:left;height:16px;line-height:16px;margin:0 5px}.a2a_kit a{cursor:pointer}.a2a_floating_style { background-color: #fff; border-radius: 6px; padding: 4px; position: fixed; z-index: 9999995;    animation: a2aFadeIn .2s ease-in;}.a2a_vertical_style a { clear: left;display: block;overflow: hidden;padding: 4px;text-decoration: none; }.a2a_floating_style.a2a_default_style { bottom: 0; }.a2a_floating_style.a2a_default_style a { padding: 4px; }.a2a_count {background-color: #fff;border: 1px solid #ccc;box-sizing: border-box;color: #2a2a2a;display: block;float: left;font: 12px Arial,Helvetica,sans-serif;height: 16px;margin-left: 4px;position: relative;text-align: center;width: 50px;}.a2a_count:before,.a2a_count:after {border: solid transparent;border-width: 4px 4px 4px 0;content: "";height: 0;left: 0;line-height: 0;margin: -4px 0 0 -4px;position: absolute;top: 50%;width: 0;}.a2a_count:before {border-right-color: #ccc;}.a2a_count:after {border-right-color: #fff;margin-left: -3px;}.a2a_count span {    animation: a2aFadeIn .14s ease-in;}.a2a_vertical_style .a2a_counter img {display: block;}.a2a_vertical_style .a2a_count {float: none;margin-left: 0;margin-top: 6px; }.a2a_vertical_style .a2a_count:before,.a2a_vertical_style .a2a_count:after {border: solid transparent;border-width: 0 4px 4px 4px;content: "";height: 0;left: 50%;line-height: 0;margin: -4px 0 0 -4px;position: absolute;top: 0;width: 0;}.a2a_vertical_style .a2a_count:before {border-bottom-color: #ccc;}.a2a_vertical_style .a2a_count:after {border-bottom-color: #fff;margin-top: -3px;}.a2a_nowrap{white-space:nowrap}.a2a_note{margin:0 auto;padding:9px;font-size:12px;text-align:center}.a2a_note .a2a_note_note{margin:0;color:#2A2A2A}.a2a_wide a{display:block;margin-top:3px;border-top:1px solid #EEE;text-align:center}.a2a_label {position: absolute !important;clip: rect(1px 1px 1px 1px); clip: rect(1px, 1px, 1px, 1px);overflow: hidden; }iframe.a2a_shim {background-color: transparent;border: 0;bottom: 0;filter: alpha(opacity=0); height: 100%;left: 0;right: 0;top: 0;position: absolute;width: 100%;z-index: 9999996;_height: expression( ((e=document.documentElement.clientHeight)?e:document.body.clientHeight)+"px" ); _width: expression( ((e=document.documentElement.clientWidth)?e:document.body.clientWidth)+"px" ); }.a2a_dd img {border:0;-ms-touch-action:manipulation;}.a2a_button_facebook_like iframe {max-width: none;}iframe[id^="PIN_"][id$="_nag"] {display: none !important;}.a2a_i_a2a{background-position:0 0!important}.a2a_i_a2a_sm{background-position:0 -17px!important}.a2a_i_agregator{background-position:0 -34px!important}.a2a_i_aim{background-position:0 -51px!important}.a2a_i_amazon{background-position:0 -68px!important}.a2a_i_aol{background-position:0 -85px!important}.a2a_i_app_net{background-position:0 -102px!important}.a2a_i_baidu{background-position:0 -119px!important}.a2a_i_balatarin{background-position:0 -136px!important}.a2a_i_behance{background-position:0 -153px!important}.a2a_i_bibsonomy{background-position:0 -170px!important}.a2a_i_bitty{background-position:0 -187px!important}.a2a_i_blinklist{background-position:0 -204px!important}.a2a_i_blogger{background-position:0 -221px!important}.a2a_i_blogmarks{background-position:0 -238px!important}.a2a_i_bookmark{background-position:0 -255px!important}.a2a_i_bookmarks_fr{background-position:0 -272px!important}.a2a_i_box{background-position:0 -289px!important}.a2a_i_buddymarks{background-position:0 -306px!important}.a2a_i_buffer{background-position:0 -323px!important}.a2a_i_care2{background-position:0 -340px!important}.a2a_i_chrome{background-position:0 -357px!important}.a2a_i_citeulike{background-position:0 -374px!important}.a2a_i_dailyrotation{background-position:0 -391px!important}.a2a_i_default{background-position:0 -408px!important}.a2a_i_delicious{background-position:0 -425px!important}.a2a_i_designfloat{background-position:0 -442px!important}.a2a_i_diary_ru{background-position:0 -459px!important}.a2a_i_diaspora{background-position:0 -476px!important}.a2a_i_digg{background-position:0 -493px!important}.a2a_i_dihitt{background-position:0 -510px!important}.a2a_i_diigo{background-position:0 -527px!important}.a2a_i_dzone{background-position:0 -544px!important}.a2a_i_email{background-position:0 -561px!important}.a2a_i_evernote{background-position:0 -578px!important}.a2a_i_facebook{background-position:0 -595px!important}.a2a_i_fark{background-position:0 -612px!important}.a2a_i_feed{background-position:0 -629px!important}.a2a_i_feedblitz{background-position:0 -646px!important}.a2a_i_feedbucket{background-position:0 -663px!important}.a2a_i_feedly{background-position:0 -680px!important}.a2a_i_feedmailer{background-position:0 -697px!important}.a2a_i_find{background-position:0 -714px!important}.a2a_i_firefox{background-position:0 -731px!important}.a2a_i_flickr{background-position:0 -748px!important}.a2a_i_flipboard{background-position:0 -765px!important}.a2a_i_folkd{background-position:0 -782px!important}.a2a_i_foursquare{background-position:0 -799px!important}.a2a_i_github{background-position:0 -816px!important}.a2a_i_gmail{background-position:0 -833px!important}.a2a_i_google{background-position:0 -850px!important}.a2a_i_google_classroom{background-position:0 -867px!important}.a2a_i_google_plus{background-position:0 -884px!important}.a2a_i_hatena{background-position:0 -901px!important}.a2a_i_instagram{background-position:0 -918px!important}.a2a_i_instapaper{background-position:0 -935px!important}.a2a_i_itunes{background-position:0 -952px!important}.a2a_i_jamespot{background-position:0 -969px!important}.a2a_i_kakao{background-position:0 -986px!important}.a2a_i_kik{background-position:0 -1003px!important}.a2a_i_kindle{background-position:0 -1020px!important}.a2a_i_klipfolio{background-position:0 -1037px!important}.a2a_i_known{background-position:0 -1054px!important}.a2a_i_line{background-position:0 -1071px!important}.a2a_i_linkedin{background-position:0 -1088px!important}.a2a_i_livejournal{background-position:0 -1105px!important}.a2a_i_mail_ru{background-position:0 -1122px!important}.a2a_i_mendeley{background-position:0 -1139px!important}.a2a_i_meneame{background-position:0 -1156px!important}.a2a_i_miro{background-position:0 -1173px!important}.a2a_i_mixi{background-position:0 -1190px!important}.a2a_i_myspace{background-position:0 -1207px!important}.a2a_i_netlog{background-position:0 -1224px!important}.a2a_i_netvibes{background-position:0 -1241px!important}.a2a_i_netvouz{background-position:0 -1258px!important}.a2a_i_newsalloy{background-position:0 -1275px!important}.a2a_i_newsisfree{background-position:0 -1292px!important}.a2a_i_newsvine{background-position:0 -1309px!important}.a2a_i_nujij{background-position:0 -1326px!important}.a2a_i_odnoklassniki{background-position:0 -1343px!important}.a2a_i_oknotizie{background-position:0 -1360px!important}.a2a_i_oldreader{background-position:0 -1377px!important}.a2a_i_outlook_com{background-position:0 -1394px!important}.a2a_i_pinboard{background-position:0 -1411px!important}.a2a_i_pinterest{background-position:0 -1428px!important}.a2a_i_plurk{background-position:0 -1445px!important}.a2a_i_pocket{background-position:0 -1462px!important}.a2a_i_podnova{background-position:0 -1479px!important}.a2a_i_print{background-position:0 -1496px!important}.a2a_i_printfriendly{background-position:0 -1513px!important}.a2a_i_protopage{background-position:0 -1530px!important}.a2a_i_pusha{background-position:0 -1547px!important}.a2a_i_qzone{background-position:0 -1564px!important}.a2a_i_reddit{background-position:0 -1581px!important}.a2a_i_rediff{background-position:0 -1598px!important}.a2a_i_renren{background-position:0 -1615px!important}.a2a_i_segnalo{background-position:0 -1632px!important}.a2a_i_share{background-position:0 -1649px!important}.a2a_i_sina_weibo{background-position:0 -1666px!important}.a2a_i_sitejot{background-position:0 -1683px!important}.a2a_i_skype{background-position:0 -1700px!important}.a2a_i_slashdot{background-position:0 -1717px!important}.a2a_i_sms{background-position:0 -1734px!important}.a2a_i_snapchat{background-position:0 -1751px!important}.a2a_i_stumbleupon{background-position:0 -1768px!important}.a2a_i_stumpedia{background-position:0 -1785px!important}.a2a_i_svejo{background-position:0 -1802px!important}.a2a_i_symbaloo{background-position:0 -1819px!important}.a2a_i_telegram{background-position:0 -1836px!important}.a2a_i_thefreedictionary{background-position:0 -1853px!important}.a2a_i_thefreelibrary{background-position:0 -1870px!important}.a2a_i_tuenti{background-position:0 -1887px!important}.a2a_i_tumblr{background-position:0 -1904px!important}.a2a_i_twiddla{background-position:0 -1921px!important}.a2a_i_twitter{background-position:0 -1938px!important}.a2a_i_typepad{background-position:0 -1955px!important}.a2a_i_viadeo{background-position:0 -1972px!important}.a2a_i_viber{background-position:0 -1989px!important}.a2a_i_vimeo{background-position:0 -2006px!important}.a2a_i_vk{background-position:0 -2023px!important}.a2a_i_wanelo{background-position:0 -2040px!important}.a2a_i_webnews{background-position:0 -2057px!important}.a2a_i_wechat{background-position:0 -2074px!important}.a2a_i_whatsapp{background-position:0 -2091px!important}.a2a_i_winksite{background-position:0 -2108px!important}.a2a_i_wordpress{background-position:0 -2125px!important}.a2a_i_wykop{background-position:0 -2142px!important}.a2a_i_xing{background-position:0 -2159px!important}.a2a_i_y18{background-position:0 -2176px!important}.a2a_i_yahoo{background-position:0 -2193px!important}.a2a_i_yim{background-position:0 -2210px!important}.a2a_i_yoolink{background-position:0 -2227px!important}.a2a_i_youmob{background-position:0 -2244px!important}.a2a_i_youtube{background-position:0 -2261px!important}.a2a_i_yummly{background-position:0 -2278px!important}</style><style type="text/css">:root #content > #center > .dose > .dosesingle,
+:root #content > #right > .dose > .dosesingle,
+:root #header + #content > #left > #rlblock_left
+{display:none !important;}</style><link rel="stylesheet" type="text/css" href="chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/skin/socialwidgets.css"></head>
+
+
+<body>
+<!-- wrap START -->
+<div id="wrap">
+
+<!-- container START -->
+<div id="container">
+
+<!-- header START -->
+<div id="header">
+
+	<!-- banner START -->
+		<!-- banner END -->
+
+	<div id="caption">
+		<h1 id="title"><a href="http://www.tkjelectronics.dk/">TKJ Electronics</a></h1>
+		<div id="tagline">Development with ease</div>		
+	</div>
+
+	<a href="https://github.com/TKJElectronics" target="_blank"><img style="position: relative; top: -55px; float:right; margin: 0 0 15px 15px; border: 0;" height="100" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/forkus_github.png" alt="Fork us on GitHub"></a>
+
+	<div class="fixed"></div>
+</div>
+<!-- header END -->
+
+<!-- navigation START -->
+<div id="navigation">
+	<!-- menus START -->
+	<ul id="menus">
+		<li class="page_item"><a class="home" title="Home" href="http://blog.tkjelectronics.dk/">Home</a></li>
+		<li><a class="page_item page-item-x5" href="http://blog.tkjelectronics.dk/category/reviews/">Reviews</a><ul style="visibility: hidden; display: block;"><li><a class="page_item page-item-x5 last" href="http://blog.tkjelectronics.dk/category/development-boards/">Development boards</a></li></ul></li>
+		<li><a class="page_item page-item-x1" href="http://blog.tkjelectronics.dk/category/arduino/">Arduino</a></li>
+		<li><a class="page_item page-item-x2" href="http://blog.tkjelectronics.dk/category/arm-projects/">ARM</a></li>
+		<li><a class="page_item page-item-x4" href="http://blog.tkjelectronics.dk/category/pic/">PIC</a></li>
+		<li><a class="page_item page-item-x5" href="http://blog.tkjelectronics.dk/category/fpga/">FPGA</a></li>
+		<li><a class="page_item page-item-x5" href="http://blog.tkjelectronics.dk/category/tkjelectronics/">TKJ Electronics</a><ul style="visibility: hidden; display: block;"><li class="page_item page-item-581"><a href="http://blog.tkjelectronics.dk/donators/">Donators</a></li><li class="page_item page-item-2"><a href="http://blog.tkjelectronics.dk/about/" class=" last">About</a></li></ul></li>
+		<li><a class="page_item page-item-x3" href="http://shop.tkjelectronics.dk/" target="_blank" style="font-weight: bold">Webshop</a></li>
+		<li><a class="lastmenu" href="javascript:void(0);"></a></li>
+	</ul>
+	<!-- menus END -->
+
+	<!-- searchbox START -->
+	<div id="searchbox">
+					<form action="http://blog.tkjelectronics.dk/" method="get">
+				<div class="content">
+					<input type="text" class="textfield searchtip" name="s" size="24" value="">
+					<input type="submit" class="button" value="">
+				</div>
+			</form>
+			</div>
+<script type="text/javascript">
+//<![CDATA[
+	var searchbox = MGJS.$("searchbox");
+	var searchtxt = MGJS.getElementsByClassName("textfield", "input", searchbox)[0];
+	var searchbtn = MGJS.getElementsByClassName("button", "input", searchbox)[0];
+	var tiptext = "Type text to search here...";
+	if(searchtxt.value == "" || searchtxt.value == tiptext) {
+		searchtxt.className += " searchtip";
+		searchtxt.value = tiptext;
+	}
+	searchtxt.onfocus = function(e) {
+		if(searchtxt.value == tiptext) {
+			searchtxt.value = "";
+			searchtxt.className = searchtxt.className.replace(" searchtip", "");
+		}
+	}
+	searchtxt.onblur = function(e) {
+		if(searchtxt.value == "") {
+			searchtxt.className += " searchtip";
+			searchtxt.value = tiptext;
+		}
+	}
+	searchbtn.onclick = function(e) {
+		if(searchtxt.value == "" || searchtxt.value == tiptext) {
+			return false;
+		}
+	}
+//]]>
+</script>
+	<!-- searchbox END -->
+
+	<div class="fixed"></div>
+</div>
+<!-- navigation END -->
+
+<!-- content START -->
+<div id="content">
+
+	<!-- main START -->
+	<div id="main">
+
+
+	<div id="postpath">
+		<a title="Go to homepage" href="http://blog.tkjelectronics.dk/">Home</a>
+		 &gt; <a href="http://blog.tkjelectronics.dk/category/guides/" rel="category tag">Guides</a>, <a href="http://blog.tkjelectronics.dk/category/tkjelectronics/" rel="category tag">TKJ Electronics</a>		 &gt; A practical approach to Kalman filter and how to implement it	</div>
+
+	<div class="post" id="post-2868">
+		<h2>A practical approach to Kalman filter and how to implement it</h2>
+		<div class="info">
+			<span class="date">September 10th, 2012</span>
+			<span class="author"><a href="http://blog.tkjelectronics.dk/author/lauszus/" title="Posts by Kristian Sloth Lauszus" rel="author">Kristian Sloth Lauszus</a></span>										<span class="addcomment"><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#respond">Leave a comment</a></span>
+				<span class="comments"><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comments">Go to comments</a></span>
+						<div class="fixed"></div>
+		</div>
+		<div class="content">
+			<p>I have for a long time been interrested in Kalman filers and how they work, I also used a Kalman filter for my <a href="http://blog.tkjelectronics.dk/2012/03/the-balancing-robot/" target="_blank">Balancing robot</a>, but I never explained how it actually was implemented. Actually I had never taken the time to sit down with a pen and a piece of paper and try to do the math by myself, so I actually did not know how it was implemented.<br>
+It turned out to be a good thing, as I actually discovered a mistake in the original code, but I will get back to that later.</p>
+<p>I actually wrote about the Kalman filter as my master assignment in high school back in December 2011. But I only used the Kalman filter to calculate the true voltage of a DC signal modulated by known Gaussian white noise. My assignment can be found in the following zip file: <a href="http://www.tkjelectronics.dk/uploads/Kalman_SRP.zip">http://www.tkjelectronics.dk/uploads/Kalman_SRP.zip</a>. It is in danish, but you can properly use google translate to translate some of it. If you got any specific questions regarding the assignment, then ask in the comments below.</p>
+<p>Okay, but back to the subject. As I sad I had never taken the time to sit down and do the math regarding the Kalman filter based on an accelerometer and a gyroscope. It was not as hard as I expected, but I must confess that I still have not studied the deeper theory behind, on why it actually works. But for me, and most people out there, I am more interrested in implementing the filter, than in the deeper theory behind and why the equations works.<br>
+<span id="more-2868"></span><br>
+Before we begin you must have some basic knowledge about matrices like multiplication of matrices and transposing of matrices. If not then please take a look at the following websites:</p>
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/Matrix_multiplication#Matrix_product_.28two_matrices.29" target="_blank">http://en.wikipedia.org/wiki/Matrix_multiplication#Matrix_product_.28two_matrices.29</a></li>
+<li><a href="http://www.mathwarehouse.com/algebra/matrix/multiply-matrix.php" target="_blank">http://www.mathwarehouse.com/algebra/matrix/multiply-matrix.php</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Transpose" target="_blank">http://en.wikipedia.org/wiki/Transpose</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Covariance_matrix" target="_blank">http://en.wikipedia.org/wiki/Covariance_matrix</a></li>
+</ul>
+<p>For those of you who do not know what a Kalman filter is, it is an algorithm which uses a series of measurements observed over time, in this context an accelerometer and a gyroscope. These measurements will contain noise that will contribute to the error of the measurement. The Kalman filter will then try to estimate the state of the system, based on the current and previous states, that tend to be more precise that than the measurements alone.</p>
+<p>In this context the problem is that the accelerometer is in general very noise when it is used to measure the gravitational acceleration since the robot is moving back and forth. The problem with the gyro is that it drifts over time – just like a spinning wheel-gyro will start to fall down when it is losing speed.<br>
+In short you can say that you can only trust the gyroscope on a short term while you can only trust the accelerometer on a long term. </p>
+<p>There is actually a very easy way to deal with this by using a complimentary filter, which basicly just consist of a digital low-pass filter on the accelerometer and digital high-pass filter on the gyroscope readings. But it is not as accurate as the Kalman filter, but other people have succesfully build balancing robots using a fine-tuned complimentary filter.</p>
+<p>More information about gyroscopes, accelerometer and complimentary filters can be found in this <a href="http://web.mit.edu/scolton/www/filter.pdf" target="_blank">pdf</a>. A comparison between a complimentary filter and a Kalman filter can be found in the following <a href="http://robottini.altervista.org/kalman-filter-vs-complementary-filter" target="_blank">blog post</a>.</p>
+<p>The Kalman filter operates by producing a statistically optimal estimate of the system state based upon the measurement(s). To do this it will need to know the noise of the input to the filter called the measurement noise, but also the noise of the system itself called the process noise. To do this the noise has to be <a href="http://en.wikipedia.org/wiki/Normal_distribution" target="_blank">Gaussian distributed</a> and have a mean of zero, luckily for us most random noise have this characteristic.<br>
+For more information about the theory behind the filter take a look at the following pages:</p>
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/Kalman_filter" target="_blank">http://en.wikipedia.org/wiki/Kalman_filter</a></li>
+<li><a href="http://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf" target="_blank">http://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf</a></li>
+<li><a href="http://academic.csuohio.edu/simond/courses/eec644/kalman.pdf" target="_blank">http://academic.csuohio.edu/simond/courses/eec644/kalman.pdf</a></li>
+</ul>
+<p><strong>The system state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex.php" alt="\boldsymbol{x}_k" title="\boldsymbol{x}_k" class="latex"></strong><br>
+The next of this article might seem very confusing for some, but I promise you if you grab a pen and a piece of paper and try to follow along it is not that hard if you are reasonable at math.</p>
+<p>If you, like me, do not have a calculator or computer program that can work with matrices, then I recommend the free online calculator <a href="http://www.wolframalpha.com/" target="_blank">Wolfram Alpha</a>. I used it for all the calculations in this article.</p>
+<p>I will use the same notation as the <a href="http://en.wikipedia.org/wiki/Kalman_filter" target="_blank">wikipedia article</a>, but I will like to note that when the matrixes are constants and does not depend on the current time you do not have to write the k after them. So for instance <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(1).php" alt="F_k" title="F_k" class="latex"> can be simplified to <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(2).php" alt="F" title="F" class="latex">.</p>
+<p>Also I would like to write a small explanation of the other aspects of the notations.<br>
+First I will make a note about whats called the <em>previous state</em>:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(3).php" alt="\boldsymbol{\hat{x}}_{k-1 | k-1}" title="\boldsymbol{\hat{x}}_{k-1 | k-1}" class="latex"></center><br>
+Which is the previous estimated state based on the previous state and the estimates of the states before it.<p></p>
+<p>The next is the <em>a priori state</em>:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(4).php" alt="\boldsymbol{\hat{x}}_{k | k-1}" title="\boldsymbol{\hat{x}}_{k | k-1}" class="latex"></center><br>
+A priori means the estimate of the state matrix at the current time k based on the previous state of the system and the estimates of the states before it.<p></p>
+<p>The last one is called <em>a posteriori state</em>:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(5).php" alt="\boldsymbol{\hat{x}}_{k | k}" title="\boldsymbol{\hat{x}}_{k | k}" class="latex"></center><br>
+Is the estimated of the state at time k given observations up to and including at time k. <p></p>
+<p>The problem is that the system state itself is hidden and can only be observed through observation <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(6).php" alt="z_k" title="z_k" class="latex">. This is also called a <a href="http://en.wikipedia.org/wiki/Hidden_Markov_model" target="_blank">Hidden Markov model</a>.</p>
+<p>This means that the state will be based upon the state at time k and all the previous states. That also means that you can not trust the estimate of the state before the Kalman filter has stabilized – take a look at the graph at the front page of <a href="http://www.tkjelectronics.dk/uploads/Kalman_SRP.zip">my assignment</a>.</p>
+<p>The hat over the <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(7).php" alt="\hat{x}" title="\hat{x}" class="latex"> means that is the estimate of the state. Unlike just a single <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(8).php" alt="x" title="x" class="latex"> which means the true state – the one we are trying to estimate.<br>
+So the notation for the state at time k is:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(9).php" alt="\boldsymbol{x}_k " title="\boldsymbol{x}_k " class="latex"></center><p></p>
+<p>The state of the system at time k if given by:</p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(10).php" alt="\boldsymbol{x}_k = \boldsymbol{F}x_{k-1} + \boldsymbol{B}u_k + w_k" title="\boldsymbol{x}_k = \boldsymbol{F}x_{k-1} + \boldsymbol{B}u_k + w_k" class="latex"></center><p></p>
+<p>Where <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(11).php" alt="x_k" title="x_k" class="latex"> is the state matrix which is given by:</p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(12).php" alt="\boldsymbol{x}_k = \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_k" title="\boldsymbol{x}_k = \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_k" class="latex"></center><p></p>
+<p>As you can see the output of the filter will be the angle <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(13).php" alt="\theta" title="\theta" class="latex"> but also the bias <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(14).php" alt="\dot{\theta}_b" title="\dot{\theta}_b" class="latex"> based upon the measurements from the accelerometer and gyroscope. The bias is the amount the gyro has drifted. This means that one can get the true rate by subtracting the bias from the gyro measurement.</p>
+<p>The next is the <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(2).php" alt="F" title="F" class="latex"> matrix, which is the state transition model which is applied to the prevouis state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(15).php" alt="x_{k-1}" title="x_{k-1}" class="latex">.</p>
+<p>In this case <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(2).php" alt="F" title="F" class="latex"> is defined as:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(16).php" alt="\boldsymbol{F} = \begin{bmatrix} 1 &amp; -\Delta t \\ 0 &amp; 1 \end{bmatrix}" title="\boldsymbol{F} = \begin{bmatrix} 1 &amp; -\Delta t \\ 0 &amp; 1 \end{bmatrix}" class="latex"></center><p></p>
+<p>I know that the <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(17).php" alt="-\Delta t" title="-\Delta t" class="latex"> might seem confusing, but it will make sense later (take a look at my <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/comment-page-1/#comment-57783">comment</a>).</p>
+<p>The next is the control input <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(18).php" alt="u_k" title="u_k" class="latex">, in this case it is the gyroscope measurement in degrees per second (°/s) at time k, this is also called the rate <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(19).php" alt="\dot{\theta}" title="\dot{\theta}" class="latex">. We will actually rewrite the state equation as:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(20).php" alt="\boldsymbol{x}_k = \boldsymbol{F}x_{k-1} + \boldsymbol{B}{\dot{\theta}_k} + w_k" title="\boldsymbol{x}_k = \boldsymbol{F}x_{k-1} + \boldsymbol{B}{\dot{\theta}_k} + w_k" class="latex"></center><p></p>
+<p>The next thing is the <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(21).php" alt="B" title="B" class="latex"> matrix. Which is called the control-input model, which is defined as:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(22).php" alt="\boldsymbol{B} = \begin{bmatrix} \Delta t \\ 0 \end{bmatrix}" title="\boldsymbol{B} = \begin{bmatrix} \Delta t \\ 0 \end{bmatrix}" class="latex"></center><p></p>
+<p>This makes perfectly sense as you will get the angle <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(13).php" alt="\theta" title="\theta" class="latex"> when you multiply the rate <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(19).php" alt="\dot{\theta}" title="\dot{\theta}" class="latex"> by the delta time <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(23).php" alt="\Delta t" title="\Delta t" class="latex"> and since we can not calculate the bias directly based on the rate we will set the bottom of the matrix to 0.</p>
+<p><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(24).php" alt="w_k" title="w_k" class="latex"> is process noise which is Gaussian distributed with a zero mean and with covariance <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(25).php" alt="Q" title="Q" class="latex"> to the time k:</p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(26).php" alt="\boldsymbol{w}_k \sim N\left ( 0, \boldsymbol{Q}_k \right )" title="\boldsymbol{w}_k \sim N\left ( 0, \boldsymbol{Q}_k \right )" class="latex"></center><p></p>
+<p><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(27).php" alt="Q_k" title="Q_k" class="latex"> is the process noise covariance matrix and in this case the covariance matrix of the state estimate of the accelerometer and bias. In this case we will consider the estimate of the bias and the accelerometer to be independent, so it’s actually just equal to the variance of the estimate of the accelerometer and bias.<br>
+The final matrix is defined as so:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(28).php" alt="\boldsymbol{Q}_k = \begin{bmatrix} Q_\theta &amp; 0 \\ 0 &amp; Q_{\dot{\theta}_b} \end{bmatrix}\Delta t " title="\boldsymbol{Q}_k = \begin{bmatrix} Q_\theta &amp; 0 \\ 0 &amp; Q_{\dot{\theta}_b} \end{bmatrix}\Delta t " class="latex"></center><p></p>
+<p>As you can see the <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(27).php" alt="Q_k" title="Q_k" class="latex"> covariance matrix depends on the current time k, so the accelerometer variance <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(29).php" alt="Q_\theta" title="Q_\theta" class="latex"> and the variance of the bias <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(30).php" alt="Q_{\dot{\theta}_b}" title="Q_{\dot{\theta}_b}" class="latex"> is multiplied by the delta time <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(23).php" alt="\Delta t" title="\Delta t" class="latex">.<br>
+This makes sense as the process noise will be larger as longer time it is since the last update of the state. For instance the gyro could have drifted.<br>
+You will have to know these constants for the Kalman filter to work.<br>
+Note if you set a larger value, the more noise in the estimation of the state. So for instance if the estimated angle starts to drift you have to increase the value of <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(30).php" alt="Q_{\dot{\theta}_b}" title="Q_{\dot{\theta}_b}" class="latex">. Otherwise if the estimate tends to be slow you are trusting the estimate of the angle too much and should try to decrease the value of <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(29).php" alt="Q_\theta" title="Q_\theta" class="latex"> to make it more responsive.</p>
+<p><strong>The measurement <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(31).php" alt="\boldsymbol{z}_k" title="\boldsymbol{z}_k" class="latex"></strong><br>
+Now we will take a look at the observation or measurement <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(6).php" alt="z_k" title="z_k" class="latex"> of the true state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(11).php" alt="x_k" title="x_k" class="latex">. The observation <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(6).php" alt="z_k" title="z_k" class="latex"> is given by:</p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(32).php" alt="\boldsymbol{z}_k = \boldsymbol{H}x_{k} + v_k" title="\boldsymbol{z}_k = \boldsymbol{H}x_{k} + v_k" class="latex"></center><p></p>
+<p>As you can see the measurement <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(6).php" alt="z_k" title="z_k" class="latex"> is given by the current state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(11).php" alt="x_k" title="x_k" class="latex"> multiplied by the <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(33).php" alt="H" title="H" class="latex"> matrix plus the measurement noise <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(34).php" alt="v_k" title="v_k" class="latex">.</p>
+<p><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(33).php" alt="H" title="H" class="latex"> is called the observation model and is used to map the true state space into the observed space. The true state can not be observed. Since the measurement is just the measurement from the accelerometer, <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(33).php" alt="H" title="H" class="latex"> is given by:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(35).php" alt="\boldsymbol{H} = \begin{bmatrix} 1 &amp; 0 \end{bmatrix}" title="\boldsymbol{H} = \begin{bmatrix} 1 &amp; 0 \end{bmatrix}" class="latex"></center><p></p>
+<p>The noise of the measurement have to be Gaussian distributed as well with a zero mean and <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(36).php" alt="R" title="R" class="latex"> as the covariance:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(37).php" alt="\boldsymbol{v}_k \sim N\left ( 0, \boldsymbol{R} \right )" title="\boldsymbol{v}_k \sim N\left ( 0, \boldsymbol{R} \right )" class="latex"></center><p></p>
+<p>But as <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(36).php" alt="R" title="R" class="latex"> is not a matrix the measurement noise is just equal to the variance of the measurement, since the covariance of the same variable is equal to the variance. See this <a href="http://en.wikipedia.org/wiki/Covariance_matrix#Generalization_of_the_variance" target="_blank">page</a> for more information.<br>
+Now we can define <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(36).php" alt="R" title="R" class="latex"> as so: </p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(38).php" alt="\boldsymbol{R} = E \begin{bmatrix} v_k &amp; {v_k}^T \end{bmatrix} = var(v_k) " title="\boldsymbol{R} = E \begin{bmatrix} v_k &amp; {v_k}^T \end{bmatrix} = var(v_k) " class="latex"></center><p></p>
+<p>More information about covariance can be found on <a href="http://en.wikipedia.org/wiki/Covariance_matrix#Conflicting_nomenclatures_and_notations" target="_blank">Wikipedia</a> and in <a href="http://www.tkjelectronics.dk/uploads/Kalman_SRP.zip">my assignment</a>.</p>
+<p>We will assume that the measurement noise is the same and does not depend on the time k:</p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(39).php" alt="var(v_k) = var(v) " title="var(v_k) = var(v) " class="latex"></center><p></p>
+<p>Note that if you set the measurement noise variance <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(40).php" alt="var(v)" title="var(v)" class="latex"> too high the filter will respond really slowly as it is trusting new measurements less, but if it is too small the value might overshoot and be noisy since we trust the accelerometer measurements too much.</p>
+<p>So to round up you have to find the the process noise variances <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(29).php" alt="Q_\theta" title="Q_\theta" class="latex"> and <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(30).php" alt="Q_{\dot{\theta}_b}" title="Q_{\dot{\theta}_b}" class="latex"> and the measurement variance of the measurement noise <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(40).php" alt="var(v)" title="var(v)" class="latex">. There are multiple ways to find them, but it is out of the aspect of this article.</p>
+<p><strong>The Kalman filter equations</strong><br>
+Okay now to the equations we will use to estimate the true state of the system at time k <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(41).php" alt="\hat{x}_k" title="\hat{x}_k" class="latex">. Some clever guys came up with equations found below to estimate the state of the system.<br>
+The equations can be written more compact, but I prefer to have them stretched out, so it is easier to implement and understand the different steps.</p>
+<p><strong>Predict</strong><br>
+In the first two equations we will try to predict the current state and the error covariance matrix at time k. First the filter will try to estimate the current state based on all the previous states and the gyro measurement:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(42).php" alt="\boldsymbol{\hat{x}}_{k | k-1} = \boldsymbol{F}\hat{x}_{k-1 | k-1} + \boldsymbol{B}{\dot{\theta}_k} " title="\boldsymbol{\hat{x}}_{k | k-1} = \boldsymbol{F}\hat{x}_{k-1 | k-1} + \boldsymbol{B}{\dot{\theta}_k} " class="latex"></center><br>
+That is also why it is called a control input, since we use it as an extra input to estimate the state at the current time k called the a priori state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(43).php" alt="\hat{x}_{k | k-1}" title="\hat{x}_{k | k-1}" class="latex"> as described in the beginning of the article.<p></p>
+<p>The next thing is that we will try to estimate the a priori error covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(44).php" alt="P_{k | k-1}" title="P_{k | k-1}" class="latex"> based on the previous error covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(45).php" alt="P_{k-1 | k-1}" title="P_{k-1 | k-1}" class="latex">, which is defined as:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(46).php" alt="\boldsymbol{P}_{k | k-1} = \boldsymbol{F}\boldsymbol{P}_{k-1 | k-1}\boldsymbol{F}^T + \boldsymbol{Q}_k" title="\boldsymbol{P}_{k | k-1} = \boldsymbol{F}\boldsymbol{P}_{k-1 | k-1}\boldsymbol{F}^T + \boldsymbol{Q}_k" class="latex"></center><p></p>
+<p>This matrix is used to estimate how much we trust the current values of the estimated state. The smaller the more we trust the current estimated state. The principle of the equation above is actually pretty easy to understand, as it is pretty obvious that the error covariance will increase since we last updated the estimate of the state, therefore we multiplied the error covariance matrix by the state transition model <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(2).php" alt="F" title="F" class="latex"> and the transpose of that <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(47).php" alt="F^T" title="F^T" class="latex"> and add the current process noise <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(27).php" alt="Q_k" title="Q_k" class="latex"> at time k.</p>
+<p>The error covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(48).php" alt="P" title="P" class="latex"> in our case is a 2×2 matrix:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(49).php" alt="\boldsymbol{P} = \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}" title="\boldsymbol{P} = \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}" class="latex"></center><p></p>
+<p><strong>Update</strong><br>
+The fist thing we will do is to compute the difference between the measurement <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(6).php" alt="z_k" title="z_k" class="latex"> and the a priori state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(50).php" alt="x_{k | k-1}" title="x_{k | k-1}" class="latex">, this is also called the innovation:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(51).php" alt="\boldsymbol{\tilde{y}}_k = \boldsymbol{z}_k - \boldsymbol{H}\hat{x}_{k | k-1}" title="\boldsymbol{\tilde{y}}_k = \boldsymbol{z}_k - \boldsymbol{H}\hat{x}_{k | k-1}" class="latex"></center><p></p>
+<p>The observation model <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(33).php" alt="H" title="H" class="latex"> is used to map the a priori state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(50).php" alt="x_{k | k-1}" title="x_{k | k-1}" class="latex"> into the observed space which is the measurement from the accelerometer, therefore the innovation is not a matrix<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(52).php" alt="\boldsymbol{\tilde{y}}_k = \begin{bmatrix} \boldsymbol{\tilde{y}} \end{bmatrix}_k" title="\boldsymbol{\tilde{y}}_k = \begin{bmatrix} \boldsymbol{\tilde{y}} \end{bmatrix}_k" class="latex"></center><p></p>
+<p>The next thing we will do is calculate whats called the innovation covariance:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(53).php" alt="\boldsymbol{S}_k = \boldsymbol{H} \boldsymbol{P}_{k | k-1} \boldsymbol{H}^T + \boldsymbol{R} " title="\boldsymbol{S}_k = \boldsymbol{H} \boldsymbol{P}_{k | k-1} \boldsymbol{H}^T + \boldsymbol{R} " class="latex"></center><br>
+What it does is that it tries to predict how much we should trust the measurement based on the a priori error covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(44).php" alt="P_{k | k-1}" title="P_{k | k-1}" class="latex"> and the measurement covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(36).php" alt="R" title="R" class="latex">. The observation model <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(33).php" alt="H" title="H" class="latex"> is used to map the a priori error covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(44).php" alt="P_{k | k-1}" title="P_{k | k-1}" class="latex"> into observed space.<p></p>
+<p>The bigger the value of the measurement noise the larger the value of <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(54).php" alt="S" title="S" class="latex">, this means that we do not trust the incoming measurement that much.<br>
+In this case <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(54).php" alt="S" title="S" class="latex"> is not a matrix and is just written as:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(55).php" alt="\boldsymbol{S}_k = \begin{bmatrix} \boldsymbol{S} \end{bmatrix}_k" title="\boldsymbol{S}_k = \begin{bmatrix} \boldsymbol{S} \end{bmatrix}_k" class="latex"></center><p></p>
+<p>The next step is to calculate the Kalman gain. The Kalman gain is used to to indicate how much we trust the innovation and is defined as:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(56).php" alt="\boldsymbol{K}_k = \boldsymbol{P}_{k | k-1} \boldsymbol{H}^T \boldsymbol{S}_k^{-1} " title="\boldsymbol{K}_k = \boldsymbol{P}_{k | k-1} \boldsymbol{H}^T \boldsymbol{S}_k^{-1} " class="latex"></center><p></p>
+<p>You can see that if we do not trust the innovation that much the innovation covariance <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(54).php" alt="S" title="S" class="latex"> will be high and if we trust the estimate of the state then the error covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(48).php" alt="P" title="P" class="latex"> will be small the Kalman gain will therefore be small and oppesite if we trust the innovation but does not trust the estimation of the current state.</p>
+<p>If you take a deeper look you can see that the transpose of the observation model <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(33).php" alt="H" title="H" class="latex"> is used to map the state of the error covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(48).php" alt="P" title="P" class="latex"> into observed space. We then compare the error covariance matrix by multiplying with the inverse of the innovation covariance <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(54).php" alt="S" title="S" class="latex">.</p>
+<p>This make sense as we will use the observation model <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(33).php" alt="H" title="H" class="latex"> to extract data from the state error covariance and compare that with the current estimate of the innovation covariance.</p><!--Ad Injection:random-->
+<div style=""><center><script type="text/javascript"><!--
+google_ad_client = "ca-pub-9105036627031912";
+/* Blog, in posts 2 */
+google_ad_slot = "2717457567";
+google_ad_width = 468;
+google_ad_height = 60;
+//-->
+</script>
+<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script></center></div>
+<p>Note that if you do not know the state at startup you can set the error covariance matrix like so:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(57).php" alt="\boldsymbol{P} = \begin{bmatrix} L &amp; 0 \\ 0 &amp; L \end{bmatrix}" title="\boldsymbol{P} = \begin{bmatrix} L &amp; 0 \\ 0 &amp; L \end{bmatrix}" class="latex"></center><br>
+Where <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(58).php" alt="L" title="L" class="latex"> represent a large number.<p></p>
+<p>For my balancing robot I know the starting angle and I find the bias of the gyro at startup by calibrating, so I assume that the state will be known at startup, so I initialize the error covariance matrix like so:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(59).php" alt="\boldsymbol{P} = \begin{bmatrix} 0 &amp; 0 \\ 0 &amp; 0 \end{bmatrix}" title="\boldsymbol{P} = \begin{bmatrix} 0 &amp; 0 \\ 0 &amp; 0 \end{bmatrix}" class="latex"></center><p></p>
+<p>Take a look at <a href="https://github.com/TKJElectronics/BalancingRobotArduino/blob/master/BalancingRobotArduino.ino#L448-L454" target="_blank">my calibration routine</a> for more information.</p>
+<p>In this case the Kalman gain is a 2×1 matrix:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(60).php" alt="\boldsymbol{K} = \begin{bmatrix} K_0 \\ K_1 \end{bmatrix}" title="\boldsymbol{K} = \begin{bmatrix} K_0 \\ K_1 \end{bmatrix}" class="latex"></center><p></p>
+<p>Now we can update the a posteriori estimate of the current state:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(61).php" alt="\boldsymbol{\hat{x}}_{k | k} = \boldsymbol{\hat{x}}_{k | k-1} + \boldsymbol{K}_k \; \boldsymbol{\tilde{y}}_k " title="\boldsymbol{\hat{x}}_{k | k} = \boldsymbol{\hat{x}}_{k | k-1} + \boldsymbol{K}_k \; \boldsymbol{\tilde{y}}_k " class="latex"></center><br>
+This is done by adding the a priori state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(43).php" alt="\hat{x}_{k | k-1}" title="\hat{x}_{k | k-1}" class="latex"> with the Kalman gain multiplied by the innovation <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(62).php" alt="\tilde{y}_k" title="\tilde{y}_k" class="latex">.<br>
+Remember that the innovation <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(62).php" alt="\tilde{y}_k" title="\tilde{y}_k" class="latex"> is the difference between the measurement <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(6).php" alt="z_k" title="z_k" class="latex"> and the estimated priori state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(43).php" alt="\hat{x}_{k | k-1}" title="\hat{x}_{k | k-1}" class="latex">, so the innovation can both be positive and negative.<p></p>
+<p>A little simplified the equation can be understood as we simply correct the estimate of the a priori state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(43).php" alt="\hat{x}_{k | k-1}" title="\hat{x}_{k | k-1}" class="latex">, that was calculated using the previous state and the gyro measurement, with the measurement – in this case the accelerometer.</p>
+<p>The last thing we will do is update the a posteriori error covariance matrix:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(63).php" alt="\boldsymbol{P}_{k | k} = (\boldsymbol{I} - \boldsymbol{K}_k \boldsymbol{H}) \boldsymbol{P}_{k | k-1} " title="\boldsymbol{P}_{k | k} = (\boldsymbol{I} - \boldsymbol{K}_k \boldsymbol{H}) \boldsymbol{P}_{k | k-1} " class="latex"></center><p></p>
+<p>Where <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(64).php" alt="I" title="I" class="latex"> is called the identity matrix and is defined as:<br>
+</p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(65).php" alt="\boldsymbol{I} = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}" title="\boldsymbol{I} = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}" class="latex"></center><p></p>
+<p>What the filter is doing is that it is basically self-correcting the error covariance matrix based on how much we corrected the estimate. This make sense as we corrected the state based the a priori error covariance matrix <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(44).php" alt="P_{k | k-1}" title="P_{k | k-1}" class="latex">, but also the innovation covariance <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(66).php" alt="S_k" title="S_k" class="latex">.</p>
+<p><strong>Implementing the filter</strong><br>
+In this section I will use the equation from above to implement the filter into a simple c++ code that can be used for <a href="http://youtu.be/N28C_JqVhGU" target="_blank">balancing robots</a>, <a href="http://blog.tkjelectronics.dk/2012/03/quadcopters-how-to-get-started/" target="_blank">quadcopters</a> and other applications where you need to compute the angle, bias or rate.</p>
+<p>In case you want the code next to you, it can be found at github: <a href="https://github.com/TKJElectronics/KalmanFilter" target="_blank">https://github.com/TKJElectronics/KalmanFilter</a>.</p>
+<p>I will simply write the equations at the top of each step and then simplify them after that I will write how it is can be done i C and finally I will link to calculations done in <a href="http://wolframalpha.com/" target="_blank">Wolfram Alpha</a> in the bottom of each step, as I used them to do the calculation.</p>
+<p><strong id="step1">Step 1:</strong></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(42).php" alt="\boldsymbol{\hat{x}}_{k | k-1} = \boldsymbol{F}\hat{x}_{k-1 | k-1} + \boldsymbol{B}{\dot{\theta}_k} " title="\boldsymbol{\hat{x}}_{k | k-1} = \boldsymbol{F}\hat{x}_{k-1 | k-1} + \boldsymbol{B}{\dot{\theta}_k} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(67).php" alt="\begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k-1} = \begin{bmatrix} 1 &amp; -\Delta t \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k-1 | k-1} + \begin{bmatrix} \Delta t \\ 0 \end{bmatrix} \dot{\theta}_k " title="\begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k-1} = \begin{bmatrix} 1 &amp; -\Delta t \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k-1 | k-1} + \begin{bmatrix} \Delta t \\ 0 \end{bmatrix} \dot{\theta}_k " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(68).php" alt=" = \begin{bmatrix} \theta - \dot{\theta}_b \Delta t \\ \dot{\theta}_b \end{bmatrix}_{k-1 | k-1} + \begin{bmatrix} \Delta t \\ 0 \end{bmatrix} \dot{\theta}_k " title=" = \begin{bmatrix} \theta - \dot{\theta}_b \Delta t \\ \dot{\theta}_b \end{bmatrix}_{k-1 | k-1} + \begin{bmatrix} \Delta t \\ 0 \end{bmatrix} \dot{\theta}_k " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(69).php" alt=" = \begin{bmatrix} \theta - \dot{\theta}_b \Delta t + \dot{\theta} \Delta t \\ \dot{\theta}_b \end{bmatrix} " title=" = \begin{bmatrix} \theta - \dot{\theta}_b \Delta t + \dot{\theta} \Delta t \\ \dot{\theta}_b \end{bmatrix} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(70).php" alt=" = \begin{bmatrix} \theta + \Delta t (\dot{\theta} - \dot{\theta}_b) \\ \dot{\theta}_b \end{bmatrix} " title=" = \begin{bmatrix} \theta + \Delta t (\dot{\theta} - \dot{\theta}_b) \\ \dot{\theta}_b \end{bmatrix} " class="latex"></center><p></p>
+<p>As you can see the a priori estimate of the angle is <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(71).php" alt="\hat{\theta}_{k | k-1}" title="\hat{\theta}_{k | k-1}" class="latex"> is equal to the estimate of the previous state <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(72).php" alt="\hat{\theta}_{k-1 | k-1}" title="\hat{\theta}_{k-1 | k-1}" class="latex"> plus the unbiased rate times the delta time <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(23).php" alt="\Delta t" title="\Delta t" class="latex">.<br>
+Since we can not directly measure the bias the estimate of the a priori bias is just equal to the previous one.</p>
+<p>This can be written in C like so:</p>
+<div class="codecolorer-container c default" style="overflow:auto;white-space:nowrap;"><div class="c codecolorer">rate <span class="sy0">=</span> newRate <span class="sy0">-</span> bias<span class="sy0">;</span><br>
+angle <span class="sy0">+=</span> dt <span class="sy0">*</span> rate<span class="sy0">;</span></div></div>
+<p>Note that I calculate the unbiased rate, so it can be be used by the user as well.</p>
+<p>Wolfram Alpha links:</p>
+<ul>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7B1%2C-t%7D%2C%7B0%2C1%7D%7D*%7B%7Btheta%7D%2C%7Bb%7D%7D%2B%7B%7Bt%7D%2C%7B0%7D%7D*r" target="_blank">Eq. 1.1</a></li>
+</ul>
+<p><strong id="step2">Step 2:</strong></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(46).php" alt="\boldsymbol{P}_{k | k-1} = \boldsymbol{F}\boldsymbol{P}_{k-1 | k-1}\boldsymbol{F}^T + \boldsymbol{Q}_k" title="\boldsymbol{P}_{k | k-1} = \boldsymbol{F}\boldsymbol{P}_{k-1 | k-1}\boldsymbol{F}^T + \boldsymbol{Q}_k" class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(73).php" alt="\begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} = \begin{bmatrix} 1 &amp; -\Delta t \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k-1 | k-1} \begin{bmatrix} 1 &amp; 0 \\ -\Delta t &amp; 1 \end{bmatrix} + \begin{bmatrix} Q_\theta &amp; 0 \\ 0 &amp; Q_{\dot{\theta}_b} \end{bmatrix}\Delta t " title="\begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} = \begin{bmatrix} 1 &amp; -\Delta t \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k-1 | k-1} \begin{bmatrix} 1 &amp; 0 \\ -\Delta t &amp; 1 \end{bmatrix} + \begin{bmatrix} Q_\theta &amp; 0 \\ 0 &amp; Q_{\dot{\theta}_b} \end{bmatrix}\Delta t " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(74).php" alt="= \begin{bmatrix} P_{00} - \Delta t P_{10} &amp; P_{01} - \Delta t P_{11} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k-1 | k-1} \begin{bmatrix} 1 &amp; 0 \\ -\Delta t &amp; 1 \end{bmatrix} + \begin{bmatrix} Q_\theta &amp; 0 \\ 0 &amp; Q_{\dot{\theta}_b} \end{bmatrix}\Delta t " title="= \begin{bmatrix} P_{00} - \Delta t P_{10} &amp; P_{01} - \Delta t P_{11} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k-1 | k-1} \begin{bmatrix} 1 &amp; 0 \\ -\Delta t &amp; 1 \end{bmatrix} + \begin{bmatrix} Q_\theta &amp; 0 \\ 0 &amp; Q_{\dot{\theta}_b} \end{bmatrix}\Delta t " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(75).php" alt="= \begin{bmatrix} P_{00} -\Delta t P_{10} -\Delta t (P_{01} - \Delta t P_{11}) &amp; P_{01} -\Delta t P_{11} \\ P_{10} -\Delta t P_{11} &amp; P_{11} \end{bmatrix}_{k-1 | k-1} + \begin{bmatrix} Q_\theta &amp; 0 \\ 0 &amp; Q_{\dot{\theta}_b} \end{bmatrix}\Delta t " title="= \begin{bmatrix} P_{00} -\Delta t P_{10} -\Delta t (P_{01} - \Delta t P_{11}) &amp; P_{01} -\Delta t P_{11} \\ P_{10} -\Delta t P_{11} &amp; P_{11} \end{bmatrix}_{k-1 | k-1} + \begin{bmatrix} Q_\theta &amp; 0 \\ 0 &amp; Q_{\dot{\theta}_b} \end{bmatrix}\Delta t " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(76).php" alt="= \begin{bmatrix} P_{00} -\Delta t P_{10} -\Delta t (P_{01} - \Delta t P_{11}) + Q_\theta \Delta t &amp; P_{01} -\Delta t P_{11} \\ P_{10} -\Delta t P_{11} &amp; P_{11} + Q_{\dot{\theta}_b} \Delta t \end{bmatrix} " title="= \begin{bmatrix} P_{00} -\Delta t P_{10} -\Delta t (P_{01} - \Delta t P_{11}) + Q_\theta \Delta t &amp; P_{01} -\Delta t P_{11} \\ P_{10} -\Delta t P_{11} &amp; P_{11} + Q_{\dot{\theta}_b} \Delta t \end{bmatrix} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(77).php" alt="= \begin{bmatrix} P_{00} + \Delta t (\Delta t P_{11} - P_{01} - P_{10} + Q_\theta) &amp; P_{01} -\Delta t P_{11} \\ P_{10} -\Delta t P_{11} &amp; P_{11} + Q_{\dot{\theta}_b} \Delta t \end{bmatrix} " title="= \begin{bmatrix} P_{00} + \Delta t (\Delta t P_{11} - P_{01} - P_{10} + Q_\theta) &amp; P_{01} -\Delta t P_{11} \\ P_{10} -\Delta t P_{11} &amp; P_{11} + Q_{\dot{\theta}_b} \Delta t \end{bmatrix} " class="latex"></center><p></p>
+<p>The equations above can be written in C like so:</p>
+<div class="codecolorer-container c default" style="overflow:auto;white-space:nowrap;"><div class="c codecolorer">P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">+=</span> dt <span class="sy0">*</span> <span class="br0">(</span>dt<span class="sy0">*</span>P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">-</span> P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">-</span> P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">+</span> Q_angle<span class="br0">)</span><span class="sy0">;</span><br>
+P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">-=</span> dt <span class="sy0">*</span> P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="sy0">;</span><br>
+P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">-=</span> dt <span class="sy0">*</span> P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="sy0">;</span><br>
+P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">+=</span> Q_gyroBias <span class="sy0">*</span> dt<span class="sy0">;</span></div></div>
+<p>Note that this is the part of the code that there was an error in in the original code that I used.</p>
+<p>Wolfram Alpha links:</p>
+<ul>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7B1%2C-t%7D%2C%7B0%2C1%7D%7D%2A%7B%7BP_00%2CP_01%7D%2C%7BP_10%2CP_11%7D%7D" target="_blank">Eq. 2.1</a></li>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7BP_00-t*P_10%2CP_01-t*P_11%7D%2C%7BP_10%2CP_11%7D%7D*%7B%7B1%2C0%7D%2C%7B-t%2C1%7D%7D" target="_blank">Eq. 2.2</a></li>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7B1%2C-t%7D%2C%7B0%2C1%7D%7D*%7B%7BP_00%2CP_01%7D%2C%7BP_10%2CP_11%7D%7D*%7B%7B1%2C0%7D%2C%7B-t%2C1%7D%7D%2B%7B%7BQ_a%2C0%7D%2C%7B0%2CQ_b%7D%7D*t" target="_blank">Eq. 2.3</a></li>
+<li><a href="http://www.wolframalpha.com/input/?i=P_0-t*P_10-t*%28P_1-t*P_11%29%2Bt*Q_1" target="_blank">Eq. 2.4</a></li>
+</ul>
+<p><strong>Step 3:</strong></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(51).php" alt="\boldsymbol{\tilde{y}}_k = \boldsymbol{z}_k - \boldsymbol{H}\hat{x}_{k | k-1}" title="\boldsymbol{\tilde{y}}_k = \boldsymbol{z}_k - \boldsymbol{H}\hat{x}_{k | k-1}" class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(78).php" alt="= \boldsymbol{z}_k - \begin{bmatrix} 1 &amp; 0 \end{bmatrix} \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k-1}" title="= \boldsymbol{z}_k - \begin{bmatrix} 1 &amp; 0 \end{bmatrix} \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k-1}" class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(79).php" alt="= \boldsymbol{z}_k - \theta_{k | k-1} " title="= \boldsymbol{z}_k - \theta_{k | k-1} " class="latex"></center><p></p>
+<p>The innovation can be calculated in C like so:</p>
+<div class="codecolorer-container c default" style="overflow:auto;white-space:nowrap;"><div class="c codecolorer">y <span class="sy0">=</span> newAngle <span class="sy0">-</span> angle<span class="sy0">;</span></div></div>
+<p>Wolfram Alpha links:</p>
+<ul>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7B1%2C0%7D%7D*%7B%7Ba%7D%2C%7Bb%7D%7D" target="_blank">Eq. 3.1</a></li>
+</ul>
+<p><strong>Step 4:</strong></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(53).php" alt="\boldsymbol{S}_k = \boldsymbol{H} \boldsymbol{P}_{k | k-1} \boldsymbol{H}^T + \boldsymbol{R} " title="\boldsymbol{S}_k = \boldsymbol{H} \boldsymbol{P}_{k | k-1} \boldsymbol{H}^T + \boldsymbol{R} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(80).php" alt="= \begin{bmatrix} 1 &amp; 0 \end{bmatrix} \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} \begin{bmatrix} 1 \\ 0 \end{bmatrix} + \boldsymbol{R} " title="= \begin{bmatrix} 1 &amp; 0 \end{bmatrix} \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} \begin{bmatrix} 1 \\ 0 \end{bmatrix} + \boldsymbol{R} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(81).php" alt="= {P_{00}}_{k | k-1} + \boldsymbol{R} " title="= {P_{00}}_{k | k-1} + \boldsymbol{R} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(82).php" alt="= {P_{00}}_{k | k-1} + var(v) " title="= {P_{00}}_{k | k-1} + var(v) " class="latex"></center><p></p>
+<p>Again the C code is pretty simple:</p>
+<div class="codecolorer-container c default" style="overflow:auto;white-space:nowrap;"><div class="c codecolorer">S <span class="sy0">=</span> P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">+</span> R_measure<span class="sy0">;</span></div></div>
+<p>Wolfram Alpha links:</p>
+<ul>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7B1%2C0%7D%7D*%7B%7BP_00%2CP_01%7D%2C%7BP_10%2CP_11%7D%7D*%7B%7B1%7D%2C%7B0%7D%7D" target="_blank">Eq. 4.1</a></li>
+</ul>
+<p><strong>Step 5:</strong></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(56).php" alt="\boldsymbol{K}_k = \boldsymbol{P}_{k | k-1} \boldsymbol{H}^T \boldsymbol{S}_k^{-1} " title="\boldsymbol{K}_k = \boldsymbol{P}_{k | k-1} \boldsymbol{H}^T \boldsymbol{S}_k^{-1} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(83).php" alt="\begin{bmatrix} K_0 \\ K_1 \end{bmatrix}_k = \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} \begin{bmatrix} 1 \\ 0 \end{bmatrix} \boldsymbol{S}_k^{-1} " title="\begin{bmatrix} K_0 \\ K_1 \end{bmatrix}_k = \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} \begin{bmatrix} 1 \\ 0 \end{bmatrix} \boldsymbol{S}_k^{-1} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(84).php" alt="= \begin{bmatrix} P_{00} \\ P_{10} \end{bmatrix}_{k | k-1} \boldsymbol{S}_k^{-1} " title="= \begin{bmatrix} P_{00} \\ P_{10} \end{bmatrix}_{k | k-1} \boldsymbol{S}_k^{-1} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(85).php" alt="= \dfrac{\begin{bmatrix} P_{00} \\ P_{10}\end{bmatrix}_{k | k-1}}{\boldsymbol{S}_k} " title="= \dfrac{\begin{bmatrix} P_{00} \\ P_{10}\end{bmatrix}_{k | k-1}}{\boldsymbol{S}_k} " class="latex"></center><p></p>
+<p>Note that in other cases <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(54).php" alt="S" title="S" class="latex"> can be a matrix and you can not just simply divide <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(48).php" alt="P" title="P" class="latex"> by <img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(54).php" alt="S" title="S" class="latex">. Instead you have to calculate the inverse of the matrix. See the following <a href="http://mathworld.wolfram.com/MatrixInverse.html" target="_blank">page</a> for more information on how to do so.</p>
+<p>The C implementation looks like this:</p>
+<div class="codecolorer-container c default" style="overflow:auto;white-space:nowrap;"><div class="c codecolorer">K<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">=</span> P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">/</span> S<span class="sy0">;</span><br>
+K<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">=</span> P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">/</span> S<span class="sy0">;</span></div></div>
+<p>Wolfram Alpha links:</p>
+<ul>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7BP_00%2CP_01%7D%2C%7BP_10%2CP_11%7D%7D*%7B%7B1%7D%2C%7B0%7D%7D" target="_blank">Eq. 5.1</a></li>
+</ul>
+<p><strong>Step 6:</strong></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(61).php" alt="\boldsymbol{\hat{x}}_{k | k} = \boldsymbol{\hat{x}}_{k | k-1} + \boldsymbol{K}_k \; \boldsymbol{\tilde{y}}_k " title="\boldsymbol{\hat{x}}_{k | k} = \boldsymbol{\hat{x}}_{k | k-1} + \boldsymbol{K}_k \; \boldsymbol{\tilde{y}}_k " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(86).php" alt="\begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k} = \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k-1} + \begin{bmatrix} K_0 \\ K_1 \end{bmatrix}_k \boldsymbol{\tilde{y}}_k " title="\begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k} = \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k-1} + \begin{bmatrix} K_0 \\ K_1 \end{bmatrix}_k \boldsymbol{\tilde{y}}_k " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(87).php" alt="= \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k-1} + \begin{bmatrix} K_0 \; \boldsymbol{\tilde{y}} \\ K_1 \; \boldsymbol{\tilde{y}} \end{bmatrix}_k " title="= \begin{bmatrix} \theta \\ \dot{\theta}_b \end{bmatrix}_{k | k-1} + \begin{bmatrix} K_0 \; \boldsymbol{\tilde{y}} \\ K_1 \; \boldsymbol{\tilde{y}} \end{bmatrix}_k " class="latex"></center><p></p>
+<p>Yet again the equation end up pretty short, and can be written as so in C:</p>
+<div class="codecolorer-container c default" style="overflow:auto;white-space:nowrap;"><div class="c codecolorer">angle <span class="sy0">+=</span> K<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">*</span> y<span class="sy0">;</span><br>
+bias <span class="sy0">+=</span> K<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">*</span> y<span class="sy0">;</span></div></div>
+<p><strong>Step 7:</strong></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(63).php" alt="\boldsymbol{P}_{k | k} = (\boldsymbol{I} - \boldsymbol{K}_k \boldsymbol{H}) \boldsymbol{P}_{k | k-1} " title="\boldsymbol{P}_{k | k} = (\boldsymbol{I} - \boldsymbol{K}_k \boldsymbol{H}) \boldsymbol{P}_{k | k-1} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(88).php" alt="\begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k} = \left(\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} - \begin{bmatrix} K_0 \\ K_1 \end{bmatrix}_k \begin{bmatrix} 1 &amp; 0 \end{bmatrix}\right) \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} " title="\begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k} = \left(\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} - \begin{bmatrix} K_0 \\ K_1 \end{bmatrix}_k \begin{bmatrix} 1 &amp; 0 \end{bmatrix}\right) \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(89).php" alt="= \left(\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} - \begin{bmatrix} K_0 &amp; 0 \\ K_1 &amp; 0 \end{bmatrix}_k \right) \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} " title="= \left(\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} - \begin{bmatrix} K_0 &amp; 0 \\ K_1 &amp; 0 \end{bmatrix}_k \right) \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} " class="latex"></center><p></p>
+<p></p><center><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/latex(90).php" alt="= \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} - \begin{bmatrix} K_0 \; P_{00} &amp; K_0 \; P_{01} \\ K_1 \; P_{00} &amp; K_1 \; P_{01} \end{bmatrix} " title="= \begin{bmatrix} P_{00} &amp; P_{01} \\ P_{10} &amp; P_{11} \end{bmatrix}_{k | k-1} - \begin{bmatrix} K_0 \; P_{00} &amp; K_0 \; P_{01} \\ K_1 \; P_{00} &amp; K_1 \; P_{01} \end{bmatrix} " class="latex"></center><p></p>
+<p>Remember that we decrease the error covariance matrix again, since the error of the estimate of the state has been decreased.<br>
+The C code looks like this:</p>
+<div class="codecolorer-container c default" style="overflow:auto;white-space:nowrap;"><div class="c codecolorer"><span class="kw4">float</span> P00_temp <span class="sy0">=</span> P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="sy0">;</span><br>
+<span class="kw4">float</span> P01_temp <span class="sy0">=</span> P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="sy0">;</span><br>
+<br>
+P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">-=</span> K<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">*</span> P00_temp<span class="sy0">;</span><br>
+P<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">-=</span> K<span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">*</span> P01_temp<span class="sy0">;</span><br>
+P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">0</span><span class="br0">]</span> <span class="sy0">-=</span> K<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">*</span> P00_temp<span class="sy0">;</span><br>
+P<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">-=</span> K<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span> <span class="sy0">*</span> P01_temp<span class="sy0">;</span></div></div>
+<p>Wolfram Alpha links:</p>
+<ul>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7BK_0%7D%2C%7BK_1%7D%7D*%7B%7B1%2C0%7D%7D" target="_blank">Eq. 7.1</a></li>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7B1%2C0%7D%2C%7B0%2C1%7D%7D*%7B%7BP_00%2CP_01%7D%2C%7BP_10%2CP_11%7D%7D" target="_blank">Eq. 7.2</a></li>
+<li><a href="http://www.wolframalpha.com/input/?i=%7B%7BK_0%2C0%7D%2C%7BK_1%2C0%7D%7D*%7B%7BP_00%2CP_01%7D%2C%7BP_10%2CP_11%7D%7D" target="_blank">Eq. 7.3</a></li>
+</ul>
+<p>Note that I have found that the following variances works perfectly for most IMUs:</p>
+<div class="codecolorer-container c default" style="overflow:auto;white-space:nowrap;"><div class="c codecolorer"><span class="kw4">float</span> Q_angle <span class="sy0">=</span> <span class="nu16">0.001</span><span class="sy0">;</span><br>
+<span class="kw4">float</span> Q_gyroBias <span class="sy0">=</span> <span class="nu16">0.003</span><span class="sy0">;</span><br>
+<span class="kw4">float</span> R_measure <span class="sy0">=</span> <span class="nu16">0.03</span><span class="sy0">;</span></div></div>
+<p>Remember that it’s very important to set the target angle at startup if you need to use the output at startup. For more information, see the <a href="https://github.com/TKJElectronics/BalancingRobotArduino/blob/master/BalancingRobotArduino.ino#L448-L454" target="_blank">calibration routine for my balancing robot</a>.</p>
+<p>In case you missed it here is the library I wrote a library that can be used by any microcontroller that supports floating math. The source code can be found at github: <a href="https://github.com/TKJElectronics/KalmanFilter" target="_blank">https://github.com/TKJElectronics/KalmanFilter</a>.</p>
+<p>If you prefer a video explanation about the Kalman filter, I recommend the following video series: <a href="http://www.youtube.com/watch?v=FkCT_LV9Syk" target="_blank">http://www.youtube.com/watch?v=FkCT_LV9Syk</a>.</p>
+<p>Note that you can not use the library if you need to represent something in a full 3D orientations, as euler angles suffer from what is called <a href="http://en.wikipedia.org/wiki/Gimbal_lock" target="_blank">Gimbal lock</a> you will need to use Quaternions to do that, but that is a whole nother story. For now take a look at the following <a href="http://www.x-io.co.uk/node/8#open_source_imu_and_ahrs_algorithms" target="_blank">page</a>.</p>
+<p>This is all for know, I hope that you will find i helpfull, if you do or have any questions fell free to post a comment below – it supports <a href="http://en.wikibooks.org/wiki/LaTeX/Mathematics" target="_blank">LaTeX syntax</a> as well, if you need to write equations.<br>
+If you spot any errors please let me know as well.</p>
+<p><!--At request, I have now generated a pdf version of the article. The pdf can be found at the following <a href="http://blog.tkjelectronics.dk/wp-content/uploads/TKJ-Electronics-A-practical-approach-to-Kalman-filter-and-how-to-implement-it.pdf" target="_blank">link</a>.--></p>
+<!--Ad Injection:bottom-->
+<div style=""><center><script type="text/javascript"><!--
+google_ad_client = "ca-pub-9105036627031912";
+/* Blog, in posts 2 */
+google_ad_slot = "2717457567";
+google_ad_width = 468;
+google_ad_height = 60;
+//-->
+</script>
+<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script></center></div>			<div class="fixed"></div>
+		</div>
+		<div class="under">
+			<span class="categories">Categories: </span><span><a href="http://blog.tkjelectronics.dk/category/guides/" rel="category tag">Guides</a>, <a href="http://blog.tkjelectronics.dk/category/tkjelectronics/" rel="category tag">TKJ Electronics</a></span>			<span class="tags">Tags: </span><span></span>		</div>
+	</div>
+
+	<!-- related posts START -->
+		<!-- related posts END -->
+
+	<script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/comment.js"></script>
+
+
+
+<div id="comments">
+
+<div id="cmtswitcher">
+			<a id="commenttab" class="curtab" href="javascript:void(0);" onclick="MGJS.switchTab(&#39;thecomments,commentnavi&#39;, &#39;thetrackbacks&#39;, &#39;commenttab&#39;, &#39;curtab&#39;, &#39;trackbacktab&#39;, &#39;tab&#39;);">Comments (32)</a>
+		<a id="trackbacktab" class="tab" href="javascript:void(0);" onclick="MGJS.switchTab(&#39;thetrackbacks&#39;, &#39;thecomments,commentnavi&#39;, &#39;trackbacktab&#39;, &#39;curtab&#39;, &#39;commenttab&#39;, &#39;tab&#39;);">Trackbacks (0)</a>
+				<span class="addcomment"><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#respond">Leave a comment</a></span>
+				<span class="addtrackback"><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/trackback/">Trackback</a></span>
+		<div class="fixed"></div>
+</div>
+
+<div id="commentlist">
+	<!-- comments START -->
+	<ol id="thecomments">
+		<li class="comment regularcomment" id="comment-544709">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/1061f14bf4c52ba3c50bc7d6d7957c89" srcset="http://1.gravatar.com/avatar/1061f14bf4c52ba3c50bc7d6d7957c89?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-544709">
+				
+				ZiM
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				April 28th, 2015 at 17:21					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-544709">#1</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-544709&#39;, &#39;comment-544709&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-544709&#39;, &#39;comment-544709&#39;, &#39;commentbody-544709&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-544709">
+					<p>Hi Lauszus,</p>
+<p>Thank you so much for putting all this together! It helped me a lot.</p>
+<p>I have a question. Sorry if other people have asked this before. My system has a periodic jerk input( the acceleration measurement  spikes due to that) from knocking into the wall, which mess up the orientation estimation. If the system doesn’t have that jerk it works fine.<br>
+From reading your document above I feel like maybe I should adjust my process noise covariance matrix accordingly. Am I on the right track? Also I am using a sampling frequency of 500Hz. </p>
+<p> thank you very much for your time</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-545652">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/09f613a382a85ad7434f10a5a37904cb" srcset="http://0.gravatar.com/avatar/09f613a382a85ad7434f10a5a37904cb?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-545652">
+				
+				Tony
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				May 8th, 2015 at 06:45					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-545652">#2</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-545652&#39;, &#39;comment-545652&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-545652&#39;, &#39;comment-545652&#39;, &#39;commentbody-545652&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-545652">
+					<p>Hi Lasuzus,</p>
+<p>Thank you for the filter and all the explanation, my kalman filter is working very well with positive values of my angles from the gyro and the acc but when i try to use the negative values my angle just stays at 0 and after that’s done nothing works until a reset my board, i already checked the angles one by one from the gyro and acc and y get the right negative values, i dont know whats going on, i hope you can help thanks</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-545843">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/924103b0b5766856300afb21d73b6656" srcset="http://0.gravatar.com/avatar/924103b0b5766856300afb21d73b6656?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-545843">
+				
+				chfakht
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				May 10th, 2015 at 20:17					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-545843">#3</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-545843&#39;, &#39;comment-545843&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-545843&#39;, &#39;comment-545843&#39;, &#39;commentbody-545843&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-545843">
+					<p>Hi , i didn’t understand very well this phrase :”Which is the previous estimated state based on the previous state and the estimates of the states before it.” ?? can you simplify plz<br>
+thanks</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-545844">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/924103b0b5766856300afb21d73b6656" srcset="http://0.gravatar.com/avatar/924103b0b5766856300afb21d73b6656?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-545844">
+				
+				chfakht
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				May 10th, 2015 at 20:36					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-545844">#4</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-545844&#39;, &#39;comment-545844&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-545844&#39;, &#39;comment-545844&#39;, &#39;commentbody-545844&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-545844">
+					<p>please how can i specifie the process noise covariances , i’m using a MPU-6050 and kalman filter to read value from the gyroscope and accelerometer<br>
+thnaks</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-545868">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/924103b0b5766856300afb21d73b6656" srcset="http://0.gravatar.com/avatar/924103b0b5766856300afb21d73b6656?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-545868">
+				
+				chfakht
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				May 11th, 2015 at 01:27					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-545868">#5</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-545868&#39;, &#39;comment-545868&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-545868&#39;, &#39;comment-545868&#39;, &#39;commentbody-545868&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-545868">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-508375" rel="nofollow">@klaus </a><br>
+hi please can you send me your matlab code to <a href="mailto:chfakht@gmail.com">chfakht@gmail.com</a></p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-548025">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/7dc96c5ef330a909ba6c0b1bfca29c8e" srcset="http://1.gravatar.com/avatar/7dc96c5ef330a909ba6c0b1bfca29c8e?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-548025">
+				
+				Mike Veal
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				June 9th, 2015 at 13:02					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548025">#6</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-548025&#39;, &#39;comment-548025&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-548025&#39;, &#39;comment-548025&#39;, &#39;commentbody-548025&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-548025">
+					<p>This article is excellent, easily the best explanation of Kalman I’ve found and I’ve done quite a bit of reading.</p>
+<p>I am still struggling to adapt this to my use though. I’m going wrong somewhere and I’d really appreciate some pointers. I am working on a altimeter.</p>
+<p>I have a atmospheric pressure sensor, a BMP180. I want to implement a kalman filter to reduce the noise on readings from this part. Height error (noise) on the BMP180 measurement is 0.25m rms. There is only one input to the filter, height. Rate (velocity) may be calculated by looking at the previous height (filter output) and the current height (measurement including noise) and dividing by dt.<br>
+The input to the filter is height in meters, I’d like the output to be height in meters.</p>
+<p>The output of the sensor (after conversion from hPa) is in meters. The sensor has internal compensation so bias can be considered to be zero.</p>
+<p>Based on this article I have the following:<br>
+Step 0.<br>
+P matrix initialised to be 0,0,0,0 as I’m assuming that I know the start height.</p>
+<p>Step 1.<br>
+Rate = Measured height-Previous height / dt<br>
+Height = Measured height</p>
+<p>Step 2.<br>
+P[0][0] += dt * (dt*P[1][1] -- P[0][1] -- P[1][0] + Q_height);<br>
+P[0][1] -= dt * P[1][1];<br>
+P[1][0] -= dt * P[1][1];<br>
+P[1][1] += Q_gyroBias * dt;</p>
+<p>I don’t have a gyro, I’ve only got one input parameter, so Q-gyroBias is zero.</p>
+<p>Step 3.<br>
+y = Current measurement -- Previous filter output;</p>
+<p>Step 4.<br>
+S = P[0][0] + R_measure<br>
+I’ve set R_measure to be 0.25 to match the rms noise in meters.</p>
+<p>Step 5.<br>
+K[0] = P[0][0] / S;<br>
+K[1] = P[1][0] / S;</p>
+<p>Step 6.<br>
+Height = Height +K[0]*y<br>
+Bias = Bias +K[1]*y</p>
+<p>I think Bias will always be zero, but hey, I implemented it.</p>
+<p>Step 7.<br>
+float P00_temp = P[0][0];<br>
+float P01_temp = P[0][1];</p>
+<p>P[0][0] -= K[0] * P00_temp;<br>
+P[0][1] -= K[0] * P01_temp;<br>
+P[1][0] -= K[1] * P00_temp;<br>
+P[1][1] -= K[1] * P01_temp;</p>
+<p>I’ve modelled this with an Excel spreadsheet and the kalman filter doesn’t appear to be working. Any assistance greatly appreciated. It appears that by removing one of the inputs from the filter I’ve confused the heck out of myself!</p>
+<p>Many thanks,<br>
+Mike Veal.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-548027">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-548027" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				June 9th, 2015 at 13:16					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548027">#7</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-548027&#39;, &#39;comment-548027&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-548027&#39;, &#39;comment-548027&#39;, &#39;commentbody-548027&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-548027">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548025" rel="nofollow">@Mike Veal </a><br>
+Sorry, but I don’t have a lot of time at the moment, as I am writing my bachelor’s thesis.</p>
+<p>But have you considered using a accelerometer as well? All the code I have seen use the accelerometer z-axis in the combination with a barometer in order to estimate the height.</p>
+<p>Note that I might be working on this next semester for my flight controller. I don’t know what your timeframe is, but you can following my Github repository: <a href="https://github.com/Lauszus/LaunchPadFlightController" rel="nofollow">https://github.com/Lauszus/LaunchPadFlightController</a> where the code will be posted.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-548029">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/7dc96c5ef330a909ba6c0b1bfca29c8e" srcset="http://1.gravatar.com/avatar/7dc96c5ef330a909ba6c0b1bfca29c8e?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-548029">
+				
+				Mike Veal
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				June 9th, 2015 at 13:28					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548029">#8</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-548029&#39;, &#39;comment-548029&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-548029&#39;, &#39;comment-548029&#39;, &#39;commentbody-548029&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-548029">
+					<p>@ Kristian<br>
+Sadly cost is a driver as are size and power. The device is to be used on a paraglider and is battery powered.<br>
+I need to have a filter running in the next month -- then it’s off to Solvenia for a week of intensive altimeter testing!</p>
+<p>Best of luck with the thesis.</p>
+<p>If any one else is able to help I’d greatly appreciate it.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-548030">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-548030" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				June 9th, 2015 at 13:31					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548030">#9</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-548030&#39;, &#39;comment-548030&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-548030&#39;, &#39;comment-548030&#39;, &#39;commentbody-548030&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-548030">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548029" rel="nofollow">@Mike Veal </a><br>
+But a MPU-6050 is less than $3 on eBay, so I can’t see no reason for not using it?</p>
+<p>Also a Kalman filter makes no sense if you are only using one sensor! That is why it is called a sensor fusion algorithm.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-548104">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/7dc96c5ef330a909ba6c0b1bfca29c8e" srcset="http://1.gravatar.com/avatar/7dc96c5ef330a909ba6c0b1bfca29c8e?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-548104">
+				
+				Mike Veal
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				June 10th, 2015 at 12:09					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548104">#10</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-548104&#39;, &#39;comment-548104&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-548104&#39;, &#39;comment-548104&#39;, &#39;commentbody-548104&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-548104">
+					<p>Perhaps that’s what I’m struggling to understand. I can find no simplification examples with just one input.<br>
+Adding an accerometer /gyro would also make things much more complicated.<br>
+What I really need is two outputs, height and rate of change of height.<br>
+A 3 axis accelerometer / gyro could give me that infomation, but the glider will always have some forward speed as well as vertical speed.<br>
+Due to pitch, roll, yaw and repeatability of mounting axis, glider forwards motion will never be exactly on the X axis and vertical motion will never be exactly in the Z axis.<br>
+I’d have to try and separate a glider forward motion vector from the sensor output so that I could work out what constitutes vertical movement.</p>
+<p>It sounds like a simple low pass filter would be easiest.<br>
+Many thanks for your help.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-548116">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-548116" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				June 10th, 2015 at 17:20					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548116">#11</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-548116&#39;, &#39;comment-548116&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-548116&#39;, &#39;comment-548116&#39;, &#39;commentbody-548116&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-548116">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-548104" rel="nofollow">@Mike Veal </a><br>
+That can be compensated for by rotating the coordinate system, as I do for my flight controller as well: <a href="https://github.com/Lauszus/LaunchPadFlightController/blob/master/src/IMU.c" rel="nofollow">https://github.com/Lauszus/LaunchPadFlightController/blob/master/src/IMU.c</a>. Then you can just use the filtered (in this case ‘accFiltered’) z-axis and integrate that.</p>
+<p>Yes if you only want to use the barometer, then a low pass filter seems like the way to go.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-552033">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/b6297fc889699eaf36e4d5d01f4a58ba" srcset="http://2.gravatar.com/avatar/b6297fc889699eaf36e4d5d01f4a58ba?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-552033">
+				
+				Fabian
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				August 1st, 2015 at 05:38					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-552033">#12</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-552033&#39;, &#39;comment-552033&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-552033&#39;, &#39;comment-552033&#39;, &#39;commentbody-552033&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-552033">
+					<p>Hi, nice article,</p>
+<p>have you comparated the results from the Kalman filter and a complementary filter?, y did see the link to a web where they do that but the graphics dont look good.<br>
+I have made a comparison and with the parameters that I have used the Kalman filter and the complementary filters are practically the same, however I made a test, where I moved the IMU linearly in each axis and with the Kalman filter there was a variation of about +/-10 degrees but with the complementary filter the variation was a lot less (about +/- 2 deg).<br>
+Despite that I got similar results using both filters I dont know if I can improve the Kalman filter.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-552155">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-552155" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				August 3rd, 2015 at 00:20					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-552155">#13</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-552155&#39;, &#39;comment-552155&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-552155&#39;, &#39;comment-552155&#39;, &#39;commentbody-552155&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-552155">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-552033" rel="nofollow">@Fabian </a><br>
+No not really, but to be honest I am starting to use a complimentery based filter more and more, as it is just much easier to tune, as takes less time to compute. For instance I have been using this lately with my flight controller: <a href="https://github.com/Lauszus/LaunchPadFlightController/blob/master/src/IMU.c" rel="nofollow">https://github.com/Lauszus/LaunchPadFlightController/blob/master/src/IMU.c</a>.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-552842">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/b0e94d66b339a8a9c86ceb4dc14967fb" srcset="http://2.gravatar.com/avatar/b0e94d66b339a8a9c86ceb4dc14967fb?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-552842" class="url" href="http://n/a" rel="external nofollow">
+				
+				Konstantin
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				August 10th, 2015 at 16:14					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-552842">#14</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-552842&#39;, &#39;comment-552842&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-552842&#39;, &#39;comment-552842&#39;, &#39;commentbody-552842&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-552842">
+					<p>Hi! I have a question about the implementation step 1. In this step you said that the apriori estimate of the angle was equal to the estimate of the previous state plus the unbiased rate times the delta time. The issue I am dwelling on is the the unbiased rate itself. This rate seems to be a diference between the rate at time k and the bias at time k-1|k-1. Is is permissible to subtract two values obtained from different time levels?</p>
+<p>Thank you in advance!<br>
+Konstantin</p>
+<p>P.S.: The expression in the brakets in the last row, step 1, would be</p>
+<p>unbiased rate = theta_dot,k -- theta_dot_bias,k-1|k-1</p>
+<p>if you didn’t omit the indeces.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-556056">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/cb8ddc0f9414011a90e0ce97463cb829" srcset="http://0.gravatar.com/avatar/cb8ddc0f9414011a90e0ce97463cb829?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-556056">
+				
+				Erick Medina
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				September 3rd, 2015 at 00:50					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-556056">#15</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-556056&#39;, &#39;comment-556056&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-556056&#39;, &#39;comment-556056&#39;, &#39;commentbody-556056&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-556056">
+					<p>Hi, I’ve been checking your code about kalman filter, and I’m wondering why you divide by 131.0: </p>
+<p>double gyroZrate = gyroZ / 131.0; // Convert to deg/s</p>
+<p>how can I get my own value?</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-556716">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/f35690c165a04c100417088bb4c33eff" srcset="http://0.gravatar.com/avatar/f35690c165a04c100417088bb4c33eff?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-556716" class="url" href="http://n/a" rel="external nofollow">
+				
+				Konstantin
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				September 7th, 2015 at 12:23					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-556716">#16</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-556716&#39;, &#39;comment-556716&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-556716&#39;, &#39;comment-556716&#39;, &#39;commentbody-556716&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-556716">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-556056" rel="nofollow">@Erick Medina  </a><br>
+It has to do with the so-called Sensitivity Scale Factor. Check the following document, page 12:<br>
+MPU-6000 and MPU-6050 Product Specification Revision 3.3<br>
+The factor is 131 LSB/(deg/s) which means that you must divide the raw data to 131 in order to get real angular velocity.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-557126">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/cc0a78b7e1bac97f63bdf0cfb164af7e" srcset="http://0.gravatar.com/avatar/cc0a78b7e1bac97f63bdf0cfb164af7e?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-557126">
+				
+				Abhiroop
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				September 9th, 2015 at 08:11					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-557126">#17</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-557126&#39;, &#39;comment-557126&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-557126&#39;, &#39;comment-557126&#39;, &#39;commentbody-557126&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-557126">
+					<p>How do you compare the HX (which is the angle estimate) with z (which is the accel measurement)?</p>
+<p>Is this an approximation of some kind, and if so, what is the actual equation from which it is derived?<br>
+In the case of this being an approximation, it will only work for balancing type scenarios (small deflections), right?</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-557129">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/cc0a78b7e1bac97f63bdf0cfb164af7e" srcset="http://0.gravatar.com/avatar/cc0a78b7e1bac97f63bdf0cfb164af7e?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-557129">
+				
+				Abhiroop
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				September 9th, 2015 at 08:45					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-557129">#18</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-557129&#39;, &#39;comment-557129&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-557129&#39;, &#39;comment-557129&#39;, &#39;commentbody-557129&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-557129">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-544014" rel="nofollow">@Sander </a><br>
+Hi,</p>
+<p>I have the exact doubt. Did you manage to find an explanation for it?</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-557176">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/25f95fe6546d16d293d7de3222f8df05" srcset="http://2.gravatar.com/avatar/25f95fe6546d16d293d7de3222f8df05?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-557176">
+				
+				Hasan Askari
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				September 9th, 2015 at 15:08					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-557176">#19</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-557176&#39;, &#39;comment-557176&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-557176&#39;, &#39;comment-557176&#39;, &#39;commentbody-557176&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-557176">
+					<p>Hi,</p>
+<p>First of all I must say that you wrote an excellent atricle. Now let me brief you my problem , I want to estimate heading for a vechile with using IMU . I am using Murata SCC1300-D02 sensor , it has<br>
+3axis accerolmeter and 1-axis gyrometer. I am not using any magnometer so my question is that is it possible to  estimate the heading(orientation) of the Vechile with the above mentioned sensor and using Kalman filter which you have written?</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-560355">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/fd37c07607c42d652f3efe1baaf23ce3" srcset="http://0.gravatar.com/avatar/fd37c07607c42d652f3efe1baaf23ce3?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-560355">
+				
+				Law
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				September 27th, 2015 at 05:32					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-560355">#20</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-560355&#39;, &#39;comment-560355&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-560355&#39;, &#39;comment-560355&#39;, &#39;commentbody-560355&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-560355">
+					<p>Nicely done. Found one typo: “control-input model” should be “control-input matrix”.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-560609">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-560609" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Sloth Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				September 30th, 2015 at 14:09					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-560609">#21</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-560609&#39;, &#39;comment-560609&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-560609&#39;, &#39;comment-560609&#39;, &#39;commentbody-560609&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-560609">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-557176" rel="nofollow">@Hasan Askari </a><br>
+No that will be very difficult. You didn’t say what axis the gyro were measuring, but I guess it is the z-axis. Anyway I will not recommend this, as the integration will integrate noise as well.</p>
+<p>You might want to take a look on how I did it for my flight controller: <a href="http://blog.tkjelectronics.dk/2015/08/bachelors-thesis-launchpad-flight-controller" rel="nofollow">http://blog.tkjelectronics.dk/2015/08/bachelors-thesis-launchpad-flight-controller</a>. The relevant code is in here: <a href="https://github.com/Lauszus/LaunchPadFlightController/blob/master/src/IMU.c" rel="nofollow">https://github.com/Lauszus/LaunchPadFlightController/blob/master/src/IMU.c</a>.</p>
+<p>You might also want to read the chapter “Estimation of the orientation” in my report: <a href="https://github.com/Lauszus/LaunchPadFlightController/blob/master/docs/Kristian%20Sloth%20Lauszus%20-%20Flight%20Controller%20for%20Quad%20Rotor%20Helicopter%20in%20X-configuration.pdf" rel="nofollow">https://github.com/Lauszus/LaunchPadFlightController/blob/master/docs/Kristian%20Sloth%20Lauszus%20-%20Flight%20Controller%20for%20Quad%20Rotor%20Helicopter%20in%20X-configuration.pdf</a>.</p>
+<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-560355" rel="nofollow">@Law </a><br>
+Not according to Wiki: <a href="https://en.wikipedia.org/wiki/Kalman_filter#Underlying_dynamic_system_model" rel="nofollow">https://en.wikipedia.org/wiki/Kalman_filter#Underlying_dynamic_system_model</a>, but thanks for your feedback anyway!</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-568079">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/99ac47b66e0ed8d75f7378eccec31afd" srcset="http://0.gravatar.com/avatar/99ac47b66e0ed8d75f7378eccec31afd?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-568079" class="url" href="https://tachymoron.wordpress.com/" rel="external nofollow">
+				
+				spookymelonhead
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				January 6th, 2016 at 08:24					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568079">#22</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-568079&#39;, &#39;comment-568079&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-568079&#39;, &#39;comment-568079&#39;, &#39;commentbody-568079&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-568079">
+					<p>Hi..excellent article..thanks a ton.<br>
+I’ve been trying to estimate altitude from barometer(measured) and accelerometer(predicts and also gravity removed somehow)..so how do I find the covariance matrix considering if I know the error in accelerometer..how do I find error in position and velocity.?</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-568103">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-568103" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Sloth Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				January 6th, 2016 at 16:03					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568103">#23</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-568103&#39;, &#39;comment-568103&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-568103&#39;, &#39;comment-568103&#39;, &#39;commentbody-568103&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-568103">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568079" rel="nofollow">@spookymelonhead </a><br>
+I did this for my flight controller: <a href="http://blog.tkjelectronics.dk/2015/08/bachelors-thesis-launchpad-flight-controller" rel="nofollow">http://blog.tkjelectronics.dk/2015/08/bachelors-thesis-launchpad-flight-controller</a>. You can read more about it in the report: <a href="https://github.com/Lauszus/LaunchPadFlightController/raw/master/docs/Kristian%20Sloth%20Lauszus%20-%20Flight%20Controller%20for%20Quad%20Rotor%20Helicopter%20in%20X-configuration.pdf" rel="nofollow">https://github.com/Lauszus/LaunchPadFlightController/raw/master/docs/Kristian%20Sloth%20Lauszus%20-%20Flight%20Controller%20for%20Quad%20Rotor%20Helicopter%20in%20X-configuration.pdf</a>.</p>
+<p>The relevant code is here: <a href="https://github.com/Lauszus/LaunchPadFlightController/blob/master/src/AltitudeHold.c" rel="nofollow">https://github.com/Lauszus/LaunchPadFlightController/blob/master/src/AltitudeHold.c</a>.</p>
+<p>Note that I did not use a Kalman filter, but uses a simple complimentary filter. The result can be seen here: <a href="https://www.youtube.com/watch?v=HXX-2L1hKgI" rel="nofollow">https://www.youtube.com/watch?v=HXX-2L1hKgI</a></p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-568649">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/99ac47b66e0ed8d75f7378eccec31afd" srcset="http://0.gravatar.com/avatar/99ac47b66e0ed8d75f7378eccec31afd?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-568649" class="url" href="https://tachymoron.wordpress.com/" rel="external nofollow">
+				
+				spookymelonhead
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				January 15th, 2016 at 09:22					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568649">#24</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-568649&#39;, &#39;comment-568649&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-568649&#39;, &#39;comment-568649&#39;, &#39;commentbody-568649&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-568649">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568103" rel="nofollow">@Kristian Sloth Lauszus </a><br>
+Hi..may I ask..How did you came up with the idea of using (theta dot b) as second state variable?</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-568818">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/641d2835aa94cb9eb4fe3aae6a1bd245" srcset="http://0.gravatar.com/avatar/641d2835aa94cb9eb4fe3aae6a1bd245?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-568818">
+				
+				Muhammad Umair Masood
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				January 18th, 2016 at 08:46					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568818">#25</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-568818&#39;, &#39;comment-568818&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-568818&#39;, &#39;comment-568818&#39;, &#39;commentbody-568818&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-568818">
+					<p>@Kristian Sloth Lauszus </p>
+<p>Hi, I have one question regarding the angle. In your code you have mentioned an argument as new angle. Can you tell me what is new angle representing here?</p>
+<p>Best Regards,<br>
+Umair</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-568835">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-568835" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Sloth Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				January 18th, 2016 at 14:50					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568835">#26</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-568835&#39;, &#39;comment-568835&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-568835&#39;, &#39;comment-568835&#39;, &#39;commentbody-568835&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-568835">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568649" rel="nofollow">@spookymelonhead </a><br>
+I saw some other code where they did that as well.</p>
+<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-568818" rel="nofollow">@Muhammad Umair Masood </a><br>
+newAngle is the angle measured using the accelerometer.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-569015">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/e3ee4564253e59e55825007ce3b61a08" srcset="http://2.gravatar.com/avatar/e3ee4564253e59e55825007ce3b61a08?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-569015">
+				
+				Jim Remington
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				January 21st, 2016 at 23:58					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-569015">#27</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-569015&#39;, &#39;comment-569015&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-569015&#39;, &#39;comment-569015&#39;, &#39;commentbody-569015&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-569015">
+					<p>The derivation is missing a state variable (theta dot) and the rate gyro measurement should be used as a measurement, not as a “control variable”.</p>
+<p>A more complete discussion of the problem is given in <a href="http://home.earthlink.net/~schultdw/bbot/bbot.html" rel="nofollow">http://home.earthlink.net/~schultdw/bbot/bbot.html</a></p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-569611">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-569611" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Sloth Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				February 1st, 2016 at 21:06					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-569611">#28</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-569611&#39;, &#39;comment-569611&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-569611&#39;, &#39;comment-569611&#39;, &#39;commentbody-569611&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-569611">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-569015" rel="nofollow">@Jim Remington </a><br>
+I know that the article has some shortcomings, but I don’t have time to write a new one at the moment. But remember that I wrote this article back in High School before I was actually formally taught any of this stuff.</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-570342">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/99ac47b66e0ed8d75f7378eccec31afd" srcset="http://0.gravatar.com/avatar/99ac47b66e0ed8d75f7378eccec31afd?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-570342" class="url" href="https://tachymoron.wordpress.com/" rel="external nofollow">
+				
+				spookymelonhead
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				February 25th, 2016 at 09:53					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-570342">#29</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-570342&#39;, &#39;comment-570342&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-570342&#39;, &#39;comment-570342&#39;, &#39;commentbody-570342&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-570342">
+					<p>and here’s another good source for learning Kalman<br>
+<a href="https://www.youtube.com/playlist?list=PLX2gX-ftPVXU3oUFNATxGXY90AULiqnWT" rel="nofollow">https://www.youtube.com/playlist?list=PLX2gX-ftPVXU3oUFNATxGXY90AULiqnWT</a></p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment admincomment" id="comment-570343">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/04aa3aec79f1845a03eeb74681b57204" srcset="http://0.gravatar.com/avatar/04aa3aec79f1845a03eeb74681b57204?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-570343" class="url" href="http://tkjelectronics.dk/" rel="external nofollow">
+				
+				Kristian Sloth Lauszus
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				February 25th, 2016 at 10:06					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-570343">#30</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-570343&#39;, &#39;comment-570343&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-570343&#39;, &#39;comment-570343&#39;, &#39;commentbody-570343&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-570343">
+					<p><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-570342" rel="nofollow">@spookymelonhead </a><br>
+Thanks for the link <img draggable="false" class="emoji" alt="😀" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/1f600.png"></p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-570452">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/38079fde26ba5e6ef3fd35ccb86ff019" srcset="http://0.gravatar.com/avatar/38079fde26ba5e6ef3fd35ccb86ff019?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<span id="commentauthor-570452">
+				
+				Goldy
+									</span>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				March 1st, 2016 at 09:52					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-570452">#31</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-570452&#39;, &#39;comment-570452&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-570452&#39;, &#39;comment-570452&#39;, &#39;commentbody-570452&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-570452">
+					<p>Hi Kristian,</p>
+<p>Nice article. I am interested to use kalman filter to my following application can u suggest which code i use.<br>
+1. My application is to measure Tilt angle in X &amp; Y direction +/- 35 degrees. I use analog<br>
+device ADIS16209 (Inclinometer &amp; accelerometer) with ADIS16265 (digital gyroscope). I interested to measure both X &amp; Y direction accurate tilt angle in dynamic condition also.</p>
+<p>2. Presently I measure accurate tilt angle in static condition without gyroscope.</p>
+<p>Please suggest best algorithm</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	<li class="comment regularcomment" id="comment-570663">
+		<div class="author">
+			<div class="pic">
+				<img alt="" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/99ac47b66e0ed8d75f7378eccec31afd" srcset="http://0.gravatar.com/avatar/99ac47b66e0ed8d75f7378eccec31afd?s=64&amp;d=mm&amp;r=g 2x" class="avatar avatar-32 photo" height="32" width="32">			</div>
+			<div class="name">
+									<a id="commentauthor-570663" class="url" href="https://tachymoron.wordpress.com/" rel="external nofollow">
+				
+				spookymelonhead
+									</a>
+							</div>
+		</div>
+
+		<div class="info">
+			<div class="date">
+				March 12th, 2016 at 09:09					 | <a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#comment-570663">#32</a>
+			</div>
+			<div class="act">
+				<a href="javascript:void(0);" onclick="MGJS_CMT.reply(&#39;commentauthor-570663&#39;, &#39;comment-570663&#39;, &#39;comment&#39;);">Reply</a> | 
+				<a href="javascript:void(0);" onclick="MGJS_CMT.quote(&#39;commentauthor-570663&#39;, &#39;comment-570663&#39;, &#39;commentbody-570663&#39;, &#39;comment&#39;);">Quote</a>
+							</div>
+			<div class="fixed"></div>
+			<div class="content">
+				
+				<div id="commentbody-570663">
+					<p>Hey..quick question..When we write</p>
+<p>Yk= Zk- (H * Xk)</p>
+<p>which is basically subtraction between measured value and predicted value.<br>
+we set H matrix equals as 1 for angle and 0 for bias. That implies no prediction for the Gyro bias via the model and No measurement for Gyro bias too.</p>
+<p>But when it comes to updating the predicted states i.e </p>
+<p>New_angle= Predicted_angle + Kalman_gain * (Innovation)</p>
+<p>we are updating Gyro Bias</p>
+<p>GyroBias_est= GyroBias_est + Kalman_gain * Innovation</p>
+<p>so same innovation is used for getting new estimates for angle and bias.<br>
+I know its correct..since with the help of measured value, it will try to correct Gyro_bias..but it still seems odd..we updated bias with the innovation calculated for angle..!!</p>
+				</div>
+			</div>
+		</div>
+		<div class="fixed"></div>
+
+</li><!-- #comment-## -->
+	</ol>
+	<!-- comments END -->
+
+		<div id="commentnavi">
+			<span class="pages">Comment pages</span>
+			<div id="commentpager">
+				<a class="prev page-numbers" href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/comment-page-5/#comments">« Previous</a>
+<a class="page-numbers" href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/comment-page-1/#comments">1</a>
+<span class="page-numbers dots">…</span>
+<a class="page-numbers" href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/comment-page-4/#comments">4</a>
+<a class="page-numbers" href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/comment-page-5/#comments">5</a>
+<span class="page-numbers current">6</span>				<span id="cp_post_id">2868</span>
+			</div>
+			<div class="fixed"></div>
+		</div>
+
+	<!-- trackbacks START -->
+			<ol id="thetrackbacks">
+							<li class="messagebox">
+					No trackbacks yet.				</li>
+
+					</ol>
+		<div class="fixed"></div>
+	<!-- trackbacks END -->
+</div>
+
+</div>
+
+	<form action="http://blog.tkjelectronics.dk/wp-comments-post.php" method="post" id="commentform">
+	<div id="respond">
+
+					
+			<div id="author_info">
+				<div class="row">
+					<input type="text" name="author" id="author" class="textfield" value="" size="24" tabindex="1">
+					<label for="author" class="small">Name (required)</label>
+				</div>
+				<div class="row">
+					<input type="text" name="email" id="email" class="textfield" value="" size="24" tabindex="2">
+					<label for="email" class="small">E-Mail (will not be published) (required)</label>
+				</div>
+				<div class="row">
+					<input type="text" name="url" id="url" class="textfield" value="" size="24" tabindex="3">
+					<label for="url" class="small">Website</label>
+				</div>
+			</div>
+
+			
+		
+		<!-- comment input -->
+		<div class="row">
+			<textarea name="comment" id="comment" tabindex="4" rows="8" cols="50"></textarea>
+		</div>
+
+		<!-- comment submit and rss -->
+		<div id="submitbox">
+			<a class="feed" href="http://blog.tkjelectronics.dk/comments/feed/">Subscribe to comments feed</a>
+			<div class="submitbutton">
+				
+			</div>
+						<input type="hidden" name="comment_post_ID" value="2868">
+			<div class="fixed"></div>
+		</div>
+
+	</div>
+	<p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="e589530b2b"></p><div class="g-recaptcha" data-sitekey="6Lfyav4SAAAAAMDo-YGEBZEknFFkVtTiaOknFWzD" data-theme="standard"><div><div style="width: 304px; height: 78px;"><iframe src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/anchor.html" title="recaptcha widget" width="304" height="78" role="presentation" frameborder="0" scrolling="no" name="undefined"></iframe></div><textarea id="g-recaptcha-response" name="g-recaptcha-response" class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid #c1c1c1; margin: 10px 25px; padding: 0px; resize: none;  display: none; "></textarea></div></div><script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/api.js"></script>            <div id="recaptcha-submit-btn-area">&nbsp;<input name="submit" type="submit" id="submit" class="button" tabindex="6" value="Submit Comment"></div>
+            <noscript>
+            &lt;style type='text/css'&gt;#submit {display:none;}&lt;/style&gt;
+            &lt;input name="submit" type="submit" id="submit-alt" tabindex="6"
+                value="Submit Comment"/&gt; 
+            </noscript><p style="display: none;"></p>	<input type="hidden" id="ak_js" name="ak_js" value="1463808353106"><input type="hidden" name="bb2_screener_" value="1463808316 205.200.195.111"></form>
+
+	
+
+	<div id="postnavi">
+		<span class="prev"><a href="http://blog.tkjelectronics.dk/2012/09/cortex-m4-and-9dof-for-10/" rel="next">Cortex-M4 and 9DOF for $10</a></span>
+		<span class="next"><a href="http://blog.tkjelectronics.dk/2012/09/raspberry-pi-gpio-control/" rel="prev">Raspberry Pi GPIO control</a></span>
+		<div class="fixed"></div>
+	</div>
+
+
+	</div>
+	<!-- main END -->
+
+	
+<!-- sidebar START -->
+<div id="sidebar">
+
+<!-- sidebar north START -->
+<div id="northsidebar" class="sidebar">
+
+<div align="center">
+  <script type="text/javascript">
+    <!--
+    google_ad_client = "ca-pub-9105036627031912";
+    /* Blog, right panel, top */
+    google_ad_slot = "1424816654";
+    google_ad_width = 234;
+    google_ad_height = 60;
+    //-->
+  </script>
+  <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+  </script>
+</div>
+
+
+	<!-- feeds -->
+	<div class="widget widget_feeds">
+		<div class="content">
+			<div id="subscribe"><a rel="external nofollow" id="feedrss" title="Subscribe to this blog..." href="http://blog.tkjelectronics.dk/feed/"><abbr title="Really Simple Syndication">RSS</abbr></a></div>
+						<div class="fixed"></div>
+		</div>
+	</div>
+
+	<!-- showcase -->
+	
+<div id="paypal_donations-3" class="widget widget_paypal_donations"><!-- Begin PayPal Donations by https://www.tipsandtricks-hq.com/paypal-donations-widgets-plugin -->
+
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+    <div class="paypal-donations">
+        <input type="hidden" name="cmd" value="_donations">
+        <input type="hidden" name="bn" value="TipsandTricks_SP">
+        <input type="hidden" name="business" value="tkjpay@tkjelectronics.dk">
+        <input type="hidden" name="item_name" value="Donation to TKJ Electronics">
+        <input type="hidden" name="currency_code" value="USD">
+        <input type="image" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/btn_donate_LG.gif" name="submit" alt="PayPal - The safer, easier way to pay online.">
+        <img alt="" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" style="display: none !important;">
+    </div>
+<input type="hidden" name="bb2_screener_" value="1463808316 205.200.195.111"></form>
+<!-- End PayPal Donations -->
+</div>		<div id="recent-posts-3" class="widget widget_recent_entries">		<h3>Recent Posts</h3>		<ul>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2016/03/software-defined-radio-with-usrp-n200-and-labview-guide/">Software Defined Radio with USRP N200 and LabVIEW (GUIDE)</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2015/08/bachelors-thesis-launchpad-flight-controller/">Bachelor’s Thesis: LaunchPad Flight Controller</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2015/02/iot-arduino-vending-machine/">IoT Arduino Vending Machine</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2015/01/launchpad-flight-controller/">LaunchPad Flight Controller</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2014/08/handheld-xv-11-lidar-with-stm32f429-and-matlab/">Handheld XV-11 LIDAR with STM32F429 and MATLAB</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2014/08/iot-featured-soccer-table/">IoT featured soccer table</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2014/07/full-size-diy-balancing-robot/">Full size DIY Balancing Robot</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2014/03/usb-host-shield-mini-in-webshop/">USB Host Shield Mini in webshop</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2014/02/stm32-nucleo/">STM32 Nucleo – a new mbed platform</a>
+						</li>
+					<li>
+				<a href="http://blog.tkjelectronics.dk/2014/01/new-contributor-at-tkj-electronics-diego/">New contributor at TKJ Electronics – Diego</a>
+						</li>
+				</ul>
+		</div>		</div>
+<!-- sidebar north END -->
+
+<div id="centersidebar">
+
+	<!-- sidebar east START -->
+	<div id="eastsidebar" class="sidebar">
+	
+		<!-- categories -->
+		<div class="widget widget_categories">
+			<h3>Categories</h3>
+			<ul>
+					<li class="cat-item cat-item-12"><a href="http://blog.tkjelectronics.dk/category/arduino/">Arduino</a>
+</li>
+	<li class="cat-item cat-item-32"><a href="http://blog.tkjelectronics.dk/category/arm-projects/">ARM</a>
+</li>
+	<li class="cat-item cat-item-72"><a href="http://blog.tkjelectronics.dk/category/balanduino/">Balanduino</a>
+</li>
+	<li class="cat-item cat-item-70"><a href="http://blog.tkjelectronics.dk/category/bluetooth/">Bluetooth</a>
+</li>
+	<li class="cat-item cat-item-67"><a href="http://blog.tkjelectronics.dk/category/development-boards/">Development boards</a>
+</li>
+	<li class="cat-item cat-item-71"><a href="http://blog.tkjelectronics.dk/category/embedded-linux/">Embedded Linux</a>
+</li>
+	<li class="cat-item cat-item-98"><a href="http://blog.tkjelectronics.dk/category/flight-controller/">Flight Controller</a>
+</li>
+	<li class="cat-item cat-item-57"><a href="http://blog.tkjelectronics.dk/category/fpga/">FPGA</a>
+</li>
+	<li class="cat-item cat-item-59"><a href="http://blog.tkjelectronics.dk/category/guides/">Guides</a>
+</li>
+	<li class="cat-item cat-item-99"><a href="http://blog.tkjelectronics.dk/category/launchpad/">LaunchPad</a>
+</li>
+	<li class="cat-item cat-item-45"><a href="http://blog.tkjelectronics.dk/category/mini2440/">mini2440</a>
+</li>
+	<li class="cat-item cat-item-97"><a href="http://blog.tkjelectronics.dk/category/multirotors/">Multirotors</a>
+</li>
+	<li class="cat-item cat-item-69"><a href="http://blog.tkjelectronics.dk/category/news/">News</a>
+</li>
+	<li class="cat-item cat-item-68"><a href="http://blog.tkjelectronics.dk/category/other-microprocessors/">Other Microprocessors</a>
+</li>
+	<li class="cat-item cat-item-11"><a href="http://blog.tkjelectronics.dk/category/pic/">PIC</a>
+</li>
+	<li class="cat-item cat-item-96"><a href="http://blog.tkjelectronics.dk/category/quadcopter/">Quadcopter</a>
+</li>
+	<li class="cat-item cat-item-73"><a href="http://blog.tkjelectronics.dk/category/raspberry-pi/">Raspberry Pi</a>
+</li>
+	<li class="cat-item cat-item-58"><a href="http://blog.tkjelectronics.dk/category/reviews/">Reviews</a>
+</li>
+	<li class="cat-item cat-item-33"><a href="http://blog.tkjelectronics.dk/category/stm32/">STM32</a>
+</li>
+	<li class="cat-item cat-item-1"><a href="http://blog.tkjelectronics.dk/category/tkjelectronics/">TKJ Electronics</a>
+</li>
+	<li class="cat-item cat-item-61"><a href="http://blog.tkjelectronics.dk/category/tools/">Tools</a>
+</li>
+	<li class="cat-item cat-item-38"><a href="http://blog.tkjelectronics.dk/category/usb/">USB</a>
+</li>
+			</ul>
+		</div>
+
+		</div>
+	<!-- sidebar east END -->
+
+	<!-- sidebar west START -->
+	<div id="westsidebar" class="sidebar">
+	
+		<!-- blogroll -->
+		<div class="widget widget_links">
+			<h3>Blogroll</h3>
+			<ul>
+				<li><a href="http://www.circuitsathome.com/" target="_blank">Circuits@Home</a></li>
+<li><a href="http://www.eevblog.com/" title="A great blog and videos about electronics" target="_blank">EEVblog</a></li>
+<li><a href="http://www.eeweb.com/">EEWeb</a></li>
+<li><a href="https://github.com/TKJElectronics" target="_blank">Github</a></li>
+<li><a href="https://www.orderpcbs.com/" title="A marketplace where engineer and board houses connect and collaborate to create the world’s newest ideas a one-stop-shop for board ordering">Order PCB</a></li>
+<li><a href="http://actpcb.com/pcb-calculator" title="Different kinds of calculators when designing electronics" target="_blank">PCB Calculators</a></li>
+<li><a href="http://www.seeedstudio.com/" title="SeeedStudio Electronics shop with everything from Arduino to ARM kits" target="_blank">SeeedStudio</a></li>
+<li><a href="http://www.twitter.com/tkjelectronics" title="Our Twitter account with news, upcoming products, pre-releases and other stuff" target="_blank">Twitter</a></li>
+<li><a href="http://shop.tkjelectronics.dk/" target="_blank">Webshop</a></li>
+<li><a href="http://www.youtube.com/mindthomas" title="Our Youtube account with different electronics-related videoes" target="_blank">Youtube</a></li>
+			</ul>
+		</div>
+
+		</div>
+	<!-- sidebar west END -->
+	<div class="fixed"></div>
+</div>
+
+<!-- sidebar south START -->
+<div id="southsidebar" class="sidebar">
+<div id="add_to_any_subscribe_widget-3" class="widget widget_add_to_any_subscribe_widget">
+		<a class="a2a_dd addtoany_subscribe" href="https://www.addtoany.com/subscribe?linkname=TKJ%20Electronics&amp;linkurl=http%3A%2F%2Fblog.tkjelectronics.dk%2Ffeed%2F"><img src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/subscribe_171_16.png" width="171" height="16" alt="Subscribe"></a>
+		
+<script type="text/javascript">//<![CDATA[
+var a2a_config = a2a_config || {};
+a2a_config.linkname="TKJ Electronics";
+a2a_config.linkurl="http://blog.tkjelectronics.dk/feed/";
+a2a_config.onclick=1;
+a2a_config.show_title=1;
+//]]></script><script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/feed.js"></script>
+
+</div><div id="meta-3" class="widget widget_meta"><h3>Meta</h3>			<ul>
+			<li><a href="http://blog.tkjelectronics.dk/wp-login.php?action=register">Register</a></li>			<li><a href="http://blog.tkjelectronics.dk/wp-login.php">Log in</a></li>
+			<li><a href="http://blog.tkjelectronics.dk/feed/">Entries <abbr title="Really Simple Syndication">RSS</abbr></a></li>
+			<li><a href="http://blog.tkjelectronics.dk/comments/feed/">Comments <abbr title="Really Simple Syndication">RSS</abbr></a></li>
+			<li><a href="https://wordpress.org/" title="Powered by WordPress, state-of-the-art semantic personal publishing platform.">WordPress.org</a></li>			</ul>
+			</div></div>
+<!-- sidebar south END -->
+
+</div>
+<!-- sidebar END -->
+	<div class="fixed"></div>
+</div>
+<!-- content END -->
+
+<!-- footer START -->
+<div id="footer">
+	<a id="gotop" href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/#" onclick="MGJS.goTop();return false;">Top</a>
+	<a id="powered" href="http://wordpress.org/">WordPress</a>
+	<div id="copyright">
+		Copyright © 2016 TKJ Electronics	</div>
+	<div id="themeinfo">
+		Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+</div>
+<!-- footer END -->
+
+</div>
+<!-- container END -->
+</div><div style="position: static;"><div class="a2a_overlay" id="a2afeed_overlay"></div><div class="a2a_menu a2a_full" id="a2afeed_full" role="dialog" tabindex="-1" aria-label="Subscribe"><div class="a2a_full_header"><div id="a2afeed_find_container" class="a2a_menu_find_container"><input id="a2afeed_find" class="a2a_menu_find" type="text" onclick="a2a.focus_find()" onkeyup="a2a.do_find()" autocomplete="off" title="Find any service"><span id="a2afeed_find_icon" class="a2a_svg a2a_s_find" onclick="a2a.focus_find()"><svg focusable="false" xmlns="http://www.w3.org/2000/svg" version="1.1" x="0" y="0" width="24" height="24" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve"><path fill="#CCCCCC" d="M19.7 18.2l-4.5-4.5c0.7-1.1 1.2-2.3 1.2-3.6 0-3.5-2.8-6.3-6.3-6.3 -3.5 0-6.3 2.8-6.3 6.3 0 3.5 2.8 6.3 6.3 6.3 1.4 0 2.6-0.4 3.6-1.2l4.5 4.5c0.6 0.6 1.3 0.7 1.7 0.2C20.4 19.5 20.3 18.8 19.7 18.2zM10.1 14.6c-2.5 0-4.5-2.1-4.5-4.5 0-2.5 2.1-4.5 4.5-4.5 2.5 0 4.5 2.1 4.5 4.5C14.6 12.5 12.6 14.6 10.1 14.6z"></path></svg></span></div></div><div class="a2a_full_services" id="a2afeed_full_services" role="presentation"><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feed" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feed"></span>Feed </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feedly" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feedly"></span>Feedly </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#my_yahoo" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_yahoo"></span>My Yahoo </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feedblitz" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feedblitz"></span>FeedBlitz </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#my_aol" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_aol"></span>AOL Reader </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#oldreader" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_oldreader"></span>The Old Reader </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#agregator" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_agregator"></span>Agregator </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#bitty_browser_preview" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_bitty"></span>Bitty Browser Preview </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#daily_rotation" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_dailyrotation"></span>Daily Rotation </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feed_mailer" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feedmailer"></span>Feed Mailer </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feedbucket" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feedbucket"></span>FeedBucket </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#itunes" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_itunes"></span>iTunes </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#klipfolio" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_klipfolio"></span>KlipFolio </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#miro" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_miro"></span>Miro </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#netvibes" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_netvibes"></span>Netvibes </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#newsalloy" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_newsalloy"></span>NewsAlloy </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#newsisfree" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_newsisfree"></span>NewsIsFree </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#outlook" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_outlook_com"></span>Outlook </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#podnova" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_podnova"></span>PodNova </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#protopage_news_feeds" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_protopage"></span>Protopage News Feeds </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#symbaloo_bookmarks" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_symbaloo"></span>Symbaloo Bookmarks </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#the_free_dictionary" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_thefreedictionary"></span>The Free Dictionary </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#the_free_library" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_thefreelibrary"></span>The Free Library </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#winksite" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_winksite"></span>WINKsite </a><i class="a2a_i"></i><i class="a2a_i"></i></div><div class="a2a_full_footer"><a href="https://www.addtoany.com/" title="Share Buttons" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_a2a"></span>AddToAny</a></div></div><div id="a2afeed_dropdown" class="a2a_menu a2a_mini" onmouseover="a2a.onMouseOver_stay()" tabindex="-1" aria-label="Subscribe" style="display:none"><div id="a2afeed_title_container" class="a2a_menu_title_container"><input id="a2afeed_title" class="a2a_menu_title"></div><div class="a2a_mini_services" id="a2afeed_mini_services"><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feed" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feed"></span>Feed </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feedly" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feedly"></span>Feedly </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#my_yahoo" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_yahoo"></span>My Yahoo </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feedblitz" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feedblitz"></span>FeedBlitz </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#my_aol" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_aol"></span>AOL Reader </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#oldreader" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_oldreader"></span>The Old Reader </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#agregator" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_agregator"></span>Agregator </a><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#bitty_browser_preview" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_bitty"></span>Bitty Browser Preview </a></div><div id="a2afeed_cols_container" class="a2a_cols_container"><div class="a2a_col1" id="a2afeed_col1"></div><div id="a2afeed_2_col1" style="display:none"><a rel="nofollow" class="a2a_i" href="http://blog.tkjelectronics.dk/#feedblitz" target="_blank"><span class="a2a_svg a2a_s__default a2a_s_feedblitz"></span>FeedBlitz </a></div><div class="a2a_clear"></div></div><div class="a2afeed_wide a2a_wide"><a href="http://blog.tkjelectronics.dk/2012/09/a-practical-approach-to-kalman-filter-and-how-to-implement-it/" id="a2afeed_show_more_less" class="a2a_menu_show_more_less a2a_more" title="Show all"><span class="a2a_svg a2a_s__default a2a_s_a2a"></span>More…</a></div></div><div style="height: 1px; width: 1px; position: absolute; z-index: 100000; top: 0px; visibility: hidden;"><iframe id="a2afeed_sm_ifr" height="1" width="1" title="AddToAny Utility Frame" transparency="true" allowtransparency="true" frameborder="0" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/sm13.html" style="height: 1px; width: 1px; border: 0px; left: 0px; top: 0px; position: absolute; z-index: 100000; display: none;"></iframe></div></div>
+<!-- wrap END -->
+
+<!-- ngg_resource_manager_marker --><script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/wp-embed.min.js"></script>
+<!-- Powered by WPtouch: 4.1.3 -->            <script type="text/javascript">
+            var sub = document.getElementById('submit');
+            document.getElementById('recaptcha-submit-btn-area').appendChild (sub);
+            document.getElementById('submit').tabIndex = 6;
+            if ( typeof _recaptcha_wordpress_savedcomment != 'undefined') {
+                document.getElementById('comment').value = 
+                    _recaptcha_wordpress_savedcomment;
+            }
+            </script><script type="text/javascript" src="./TKJ Electronics » A practical approach to Kalman filter and how to implement it_files/form.js"></script>
+
+
+
+
+</body></html>

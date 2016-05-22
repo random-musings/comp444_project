@@ -1,0 +1,70 @@
+
+Adventures with my Accelorometer
+
+hooking up 
+ pDF link:
+ parts site
+ git hub
+ 
+ 
+ In the git hub there were two examples
+ 1. read data from accelorometer
+ 2. Calibrate accelometer
+ 
+ 
+ the Calibrate provided offsets for use of the accelometer for all future programs using this accelometer
+ I ran this program several times and it came up with the following offsets
+ -3,-3,7
+ -3,-3,8
+ -4,-4,8
+ -1,-2,7
+ -4,-1,8
+ 
+ 
+ testing out the accelometer
+ 
+ I mounted the accelerometer onto the front of the run rover and ran through abunch of tests
+ 
+At a stand still the accelerometer provides the following readings  (x,y,z) = (0.04,0.21,1.00)
+The way I have this mounted the Y axis monitors the forwards an backward motion of the run rover
+
+there is a lot of noise on the channel so they values are +/- 0.03
+If the reading jumps +/- 0.05 then the unit is moving
+If the reading jumps +/- 0.3 then we hit something.
+
+
+As the runt rover moves the magnitude of the Y value jumps all over the place.
+There does not seem to be any consistent increase or decrease in Y readings. 
+This makes it tough to determine what direction the runt rover  is going.
+The accelerometer is not senstive enough to pick up on the voluntary changes in direction so when the runt rover turns
+the accelerometer data does not spit out readings that would enable me to detect that.
+
+I was hoping that there would be more consistent readings and the ability to figure out the change in direction.
+
+
+conclusion:
+accelerometer is good for TAP sensor
+need either compass or gyroscope to get usable data as it seems like accelerometer can only sense
+1. knowing if runt rover is actually moving
+2. if runt rover hits something and stops abruptly
+
+
+After this I had to figure out what I really need to make navigation possible
+
+I came across this video for understanding accelerometers and gyroscopes and how they all work together
+https://www.youtube.com/watch?v=C7JQ7Rpwn2k
+
+
+Tomorrow
+get list of readings as it accelerates
+look at other axis
+look at TAP sensor
+
+
+
+
+also need odometer if we want to measure distance travelled for virtual walls
+
+ 
+
+ 

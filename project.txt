@@ -1,0 +1,37 @@
+In this section I will discuss items specific to the project for this course.
+
+The Moodle section on the Project contains information on grading and timing (before the final exam), but only touches on the documentation you should submit to the instructor for grading.
+
+Here is what I am seeking as documentation to be submitted for your project:
+
+In your own words, please describe your project by answering the guiding questions below. Be specific and detailed in your answers.
+
+    Design decisions – How did you approach the overall design of the project? What resources did you employ at this stage to assist you in creating an overall design?
+
+    General programming considerations – Were any special programming considerations required to implement your design? Where did you seek resource information to assist in this process?
+
+    Program implementation – Discuss your robot’s programming. What major categories of robotic control did you implment? What control approach did you employ to manage the overall control of your robot?
+
+    Testing – Discuss your test approach, your test plan and test results. That is, how did you test your robot and program to ensure you had met your design goals? Discuss any deviations from your expected test plan output and what you did about this.
+
+    Outcome – Discuss the outcome of your project. Did your robot meet all design expectations? Now that you are done, what would you do differently were you to undertake the same project again?
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+entry 1
+
+
+My motor shield arrived!
+I ordered a sain smart motor shield kit 
+http://www.sainsmart.com/sainsmart-mega2560-r3-l293d-motor-drive-shield-starter-kit-with-basic-arduino-projects.html
+
+half pint runt rover
+http://www.amazon.com/Actobotics-Half-Pint-Runt-Rover-TM/dp/B00UAWYU4U
+
+
+I found code here to get everthing going: Cause I was in the dark on which pins on the motor shield map to the pins on the Sainsmart mega board.
+http://playground.arduino.cc/Main/AdafruitMotorShield
+
+
+
